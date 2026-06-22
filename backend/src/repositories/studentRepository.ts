@@ -13,6 +13,7 @@ import {
   mockQuestionTypes,
   mockQuestionOptions,
   mockQuestions,
+  mockRecommendations,
   mockStudentParents,
   mockStudents,
   mockSubjects,
@@ -35,6 +36,7 @@ import type {
   QuestionOption,
   QuestionType,
   QuestionWithOptions,
+  Recommendation,
   RecommendationStatus,
   Student,
   StudentAIAnalysis,
@@ -223,6 +225,32 @@ const mapExamQuestion = (row: Record<string, unknown>): ExamQuestion => ({
   questionId: String(row.question_id ?? row.questionId ?? ''),
   sortOrder: Number(row.sort_order ?? row.sortOrder ?? 0),
   points: Number(row.points ?? 1),
+  createdAt: String(row.created_at ?? row.createdAt ?? ''),
+})
+
+const mapAnalysisTopic = (row: Record<string, unknown>): AIAnalysisTopic => ({
+  _source: 'database',
+  id: String(row.id),
+  analysisId: String(row.analysis_id ?? row.analysisId ?? ''),
+  topicId: String(row.topic_id ?? row.topicId ?? ''),
+  type: String(row.type ?? ''),
+  confidenceScore:
+    row.confidence_score === null || row.confidence_score === undefined
+      ? null
+      : Number(row.confidence_score),
+  createdAt: String(row.created_at ?? row.createdAt ?? ''),
+})
+
+const mapRecommendation = (row: Record<string, unknown>): Recommendation => ({
+  _source: 'database',
+  id: String(row.id),
+  analysisId: String(row.analysis_id ?? row.analysisId ?? ''),
+  studentId: String(row.student_id ?? row.studentId ?? ''),
+  title: String(row.title ?? ''),
+  description: String(row.description ?? ''),
+  recommendationType: nullableString(row.recommendation_type ?? row.recommendationType),
+  priority: Number(row.priority ?? 0),
+  status: String(row.status ?? 'pending'),
   createdAt: String(row.created_at ?? row.createdAt ?? ''),
 })
 
@@ -759,6 +787,86 @@ export class StudentRepository {
     }
   }
 
+  public async listPendingPracticeRecommendations(studentId: string): Promise<Recommendation[]> {
+    if (!this.useRealDb) {
+      return markAll(
+        mockRecommendations
+          .filter(
+            (recommendation) =>
+              recommendation.studentId === studentId &&
+              recommendation.status === 'pending' &&
+              recommendation.recommendationType === 'practice',
+          )
+          .sort((first, second) => first.priority - second.priority || second.createdAt.localeCompare(first.createdAt)),
+        'mock',
+      )
+    }
+
+    const { data, error } = await this.client
+      .from('recommendations')
+      .select('*')
+      .eq('student_id', studentId)
+      .eq('status', 'pending')
+      .eq('recommendation_type', 'practice')
+      .order('priority', { ascending: true })
+      .order('created_at', { ascending: false })
+
+    if (error) {
+      throw new AppError('Failed to fetch recommendations', 500, error.message)
+    }
+
+    const recommendations = (Array.isArray(data) ? data : []).map((row) =>
+      mapRecommendation(ensureRecord(row)),
+    )
+
+    if (recommendations.length > 0 || !this.canUseMockFallback()) {
+      return recommendations
+    }
+
+    return markAll(
+      mockRecommendations
+        .filter(
+          (recommendation) =>
+            recommendation.studentId === studentId &&
+            recommendation.status === 'pending' &&
+            recommendation.recommendationType === 'practice',
+        )
+        .sort((first, second) => first.priority - second.priority || second.createdAt.localeCompare(first.createdAt)),
+      'mock',
+    )
+  }
+
+  public async listAnalysisTopics(analysisId: string): Promise<AIAnalysisTopic[]> {
+    if (!this.useRealDb) {
+      return markAll(
+        mockAnalysisTopics.filter((analysisTopic) => analysisTopic.analysisId === analysisId),
+        'mock',
+      )
+    }
+
+    const { data, error } = await this.client
+      .from('ai_analysis_topics')
+      .select('*')
+      .eq('analysis_id', analysisId)
+
+    if (error) {
+      throw new AppError('Failed to fetch analysis topics', 500, error.message)
+    }
+
+    const analysisTopics = (Array.isArray(data) ? data : []).map((row) =>
+      mapAnalysisTopic(ensureRecord(row)),
+    )
+
+    if (analysisTopics.length > 0 || !this.canUseMockFallback()) {
+      return analysisTopics
+    }
+
+    return markAll(
+      mockAnalysisTopics.filter((analysisTopic) => analysisTopic.analysisId === analysisId),
+      'mock',
+    )
+  }
+
   public async findDifficultyByCode(code: string): Promise<QuestionDifficultyLevel | null> {
     if (!this.useRealDb) {
       const difficulty = mockDifficultyLevels.find((item) => item.code === code)
@@ -855,6 +963,56 @@ export class StudentRepository {
           question.difficultyLevelId === difficultyLevelId &&
           question.isActive,
       )
+      .map((question) => ({
+        ...question,
+        _source: 'mock',
+        options: mockQuestionOptions
+          .filter((option) => option.questionId === question.id)
+          .map((option) => withSource(option, 'mock'))
+          .sort((first, second) => first.sortOrder - second.sortOrder),
+      }))
+  }
+
+  public async listQuestionsByTopic(topicId: string): Promise<QuestionWithOptions[]> {
+    if (!this.useRealDb) {
+      return mockQuestions
+        .filter((question) => question.topicId === topicId && question.isActive)
+        .map((question) => ({
+          ...question,
+          _source: 'mock',
+          options: mockQuestionOptions
+            .filter((option) => option.questionId === question.id)
+            .map((option) => withSource(option, 'mock'))
+            .sort((first, second) => first.sortOrder - second.sortOrder),
+        }))
+    }
+
+    const { data, error } = await this.client
+      .from('questions')
+      .select('*, question_options ( id, question_id, option_text, is_correct, sort_order, created_at )')
+      .eq('topic_id', topicId)
+      .eq('is_active', true)
+
+    if (error) {
+      throw new AppError('Failed to fetch topic question bank', 500, error.message)
+    }
+
+    const questions = (Array.isArray(data) ? data : []).map((row) => {
+      const record = ensureRecord(row)
+      const options = Array.isArray(record.question_options) ? record.question_options : []
+
+      return {
+        ...mapQuestion(record),
+        options: options.map((option) => mapQuestionOption(ensureRecord(option))),
+      }
+    })
+
+    if (questions.length > 0 || !this.canUseMockFallback()) {
+      return questions
+    }
+
+    return mockQuestions
+      .filter((question) => question.topicId === topicId && question.isActive)
       .map((question) => ({
         ...question,
         _source: 'mock',

@@ -3,7 +3,11 @@ import { z } from 'zod'
 import { env } from '../lib/env.js'
 import { AppError } from '../middleware/appError.js'
 import { studentRepository, type StudentRepository } from '../repositories/studentRepository.js'
-import type { GeneratedLessonResponse, PracticeQuestion } from '../types/api.js'
+import type {
+  CreatedPracticeExamResponse,
+  GeneratedLessonResponse,
+  PracticeQuestion,
+} from '../types/api.js'
 import type { QuestionWithOptions } from '../types/database.js'
 
 interface GenerateExamInput {
@@ -13,7 +17,22 @@ interface GenerateExamInput {
   recommendationId?: string | undefined
 }
 
+interface GenerateSubjectExamInput {
+  studentId: string
+  subjectId: string
+  difficultyLevelId?: string | undefined
+}
+
+interface PracticeTopicSelection {
+  topicId: string
+  selectionSource: 'recommendation' | 'lowest_grade'
+  recommendationId?: string | undefined
+  averageScore?: number | undefined
+  latestGradeDate?: string | undefined
+}
+
 const MIN_QUESTION_COUNT = 5
+const WEAK_ANALYSIS_TYPES = new Set(['weak', 'gap', 'missed', 'attendance_correlation'])
 
 const generatedQuestionSchema = z.object({
   questions: z.array(
@@ -86,6 +105,13 @@ const questionToPracticeQuestion = (question: QuestionWithOptions): PracticeQues
   }
 }
 
+const logExamGeneration = (event: string, details: Record<string, unknown>): void => {
+  console.info(`[exam-generation] ${event}`, JSON.stringify(details))
+}
+
+const shuffleQuestions = (questions: QuestionWithOptions[]): QuestionWithOptions[] =>
+  [...questions].sort(() => Math.random() - 0.5)
+
 export class QuestionService {
   private readonly repository: StudentRepository
 
@@ -94,6 +120,14 @@ export class QuestionService {
   }
 
   public async generateExamBackedLesson(input: GenerateExamInput): Promise<GeneratedLessonResponse> {
+    logExamGeneration('start-topic-exam', {
+      studentId: input.studentId,
+      topicId: input.topicId,
+      recommendationId: input.recommendationId ?? null,
+      difficultyLevelId: input.difficultyLevelId ?? null,
+      usingRealDb: this.repository.isUsingRealDb(),
+    })
+
     const difficulty =
       input.difficultyLevelId !== undefined
         ? { id: input.difficultyLevelId }
@@ -121,11 +155,31 @@ export class QuestionService {
       difficultyLevelId,
     )
     const missingCount = Math.max(MIN_QUESTION_COUNT - dbQuestions.length, 0)
+
+    logExamGeneration('question-inventory', {
+      studentId: input.studentId,
+      topicId: input.topicId,
+      topicName: topic.name,
+      difficultyLevelId,
+      dbQuestionCount: dbQuestions.length,
+      minimumQuestionCount: MIN_QUESTION_COUNT,
+      missingQuestionCount: missingCount,
+    })
+
     const generatedQuestions =
       missingCount > 0
         ? await this.createFallbackQuestions(topic.name, input.topicId, difficultyLevelId, questionType.id, missingCount)
         : []
     const selectedQuestions = [...dbQuestions, ...generatedQuestions].slice(0, MIN_QUESTION_COUNT)
+
+    logExamGeneration('questions-selected', {
+      studentId: input.studentId,
+      topicId: input.topicId,
+      selectedQuestionCount: selectedQuestions.length,
+      dbQuestionCount: dbQuestions.length,
+      generatedQuestionCount: generatedQuestions.length,
+      selectedQuestionIds: selectedQuestions.map((question) => question.id),
+    })
 
     const exam = await this.repository.createGeneratedExam({
       studentId: input.studentId,
@@ -135,14 +189,45 @@ export class QuestionService {
       generationReason: missingCount > 0 ? 'DB inventory was insufficient; AI fallback filled gaps.' : 'DB inventory',
     })
 
-    await this.repository.addQuestionsToExam(
+    logExamGeneration('exam-created', {
+      studentId: input.studentId,
+      topicId: input.topicId,
+      examId: exam.id,
+      recommendationId: exam.recommendationId,
+      targetTopicId: exam.targetTopicId,
+      status: exam.status,
+    })
+
+    const examQuestions = await this.repository.addQuestionsToExam(
       exam.id,
       selectedQuestions.map((question) => question.id),
     )
+
+    logExamGeneration('exam-questions-attached', {
+      studentId: input.studentId,
+      topicId: input.topicId,
+      examId: exam.id,
+      attachedQuestionCount: examQuestions.length,
+      examQuestionIds: examQuestions.map((examQuestion) => examQuestion.id),
+    })
+
     await this.repository.updateParentActionStatus({
       studentId: input.studentId,
       recommendationId: input.recommendationId ?? null,
       status: 'in_progress',
+    })
+
+    logExamGeneration('parent-action-updated', {
+      studentId: input.studentId,
+      recommendationId: input.recommendationId ?? null,
+      status: input.recommendationId ? 'in_progress' : 'skipped-no-recommendation',
+    })
+
+    logExamGeneration('complete', {
+      studentId: input.studentId,
+      topicId: input.topicId,
+      examId: exam.id,
+      practiceQuestionCount: selectedQuestions.length,
     })
 
     return {
@@ -166,6 +251,253 @@ export class QuestionService {
     }
   }
 
+  public async createExamForSubject(input: GenerateSubjectExamInput): Promise<CreatedPracticeExamResponse> {
+    logExamGeneration('start-subject-exam-create-only', {
+      studentId: input.studentId,
+      subjectId: input.subjectId,
+      usingRealDb: this.repository.isUsingRealDb(),
+    })
+
+    const [student, subject] = await Promise.all([
+      this.repository.findStudentById(input.studentId),
+      this.repository.findSubjectById(input.subjectId),
+    ])
+
+    if (!student) {
+      throw new AppError('Student was not found', 404)
+    }
+
+    if (!subject) {
+      throw new AppError('Subject was not found', 404)
+    }
+
+    const selection = await this.selectPracticeTopic(input.studentId, input.subjectId)
+
+    if (!selection) {
+      throw new AppError('No topic with enough learning data was found for this subject', 404)
+    }
+
+    logExamGeneration('subject-topic-selected', {
+      studentId: input.studentId,
+      subjectId: input.subjectId,
+      topicId: selection.topicId,
+      selectionSource: selection.selectionSource,
+      recommendationId: selection.recommendationId ?? null,
+      averageScore: selection.averageScore ?? null,
+      latestGradeDate: selection.latestGradeDate ?? null,
+    })
+
+    const topic = await this.repository.findTopicById(selection.topicId)
+
+    if (!topic) {
+      throw new AppError('Topic was not found', 404)
+    }
+
+    const questionBank = await this.repository.listQuestionsByTopic(selection.topicId)
+
+    logExamGeneration('question-bank-loaded', {
+      studentId: input.studentId,
+      subjectId: input.subjectId,
+      topicId: topic.id,
+      topicName: topic.name,
+      availableQuestionCount: questionBank.length,
+      availableQuestionIds: questionBank.map((question) => question.id),
+    })
+
+    if (questionBank.length === 0) {
+      logExamGeneration('question-bank-empty', {
+        studentId: input.studentId,
+        subjectId: input.subjectId,
+        topicId: topic.id,
+        topicName: topic.name,
+        message: 'No active questions were found for selected topic. Exam was not created.',
+      })
+
+      throw new AppError('לא נמצאו שאלות פעילות במאגר עבור הנושא שנבחר.', 404)
+    }
+
+    const selectedQuestions = shuffleQuestions(questionBank).slice(0, MIN_QUESTION_COUNT)
+
+    logExamGeneration('random-questions-selected', {
+      studentId: input.studentId,
+      subjectId: input.subjectId,
+      topicId: topic.id,
+      requestedQuestionCount: MIN_QUESTION_COUNT,
+      selectedQuestionCount: selectedQuestions.length,
+      selectedQuestionIds: selectedQuestions.map((question) => question.id),
+    })
+
+    const exam = await this.repository.createGeneratedExam({
+      studentId: input.studentId,
+      topicId: topic.id,
+      recommendationId: selection.recommendationId ?? null,
+      title: `תרגול קצר: ${topic.name}`,
+      generationReason:
+        selection.selectionSource === 'recommendation'
+          ? 'Selected from latest practice recommendation'
+          : 'Selected from lowest average grade',
+    })
+
+    logExamGeneration('generated-exam-row-created', {
+      studentId: input.studentId,
+      subjectId: input.subjectId,
+      topicId: topic.id,
+      examId: exam.id,
+      recommendationId: exam.recommendationId,
+      targetTopicId: exam.targetTopicId,
+      status: exam.status,
+      table: 'generated_exams',
+    })
+
+    const examQuestions = await this.repository.addQuestionsToExam(
+      exam.id,
+      selectedQuestions.map((question) => question.id),
+    )
+
+    logExamGeneration('exam-question-rows-created', {
+      studentId: input.studentId,
+      subjectId: input.subjectId,
+      topicId: topic.id,
+      examId: exam.id,
+      attachedQuestionCount: examQuestions.length,
+      examQuestionIds: examQuestions.map((examQuestion) => examQuestion.id),
+      questionIds: selectedQuestions.map((question) => question.id),
+      table: 'exam_questions',
+    })
+
+    await this.repository.updateParentActionStatus({
+      studentId: input.studentId,
+      recommendationId: selection.recommendationId ?? null,
+      status: 'in_progress',
+    })
+
+    logExamGeneration('subject-exam-create-complete', {
+      studentId: input.studentId,
+      subjectId: input.subjectId,
+      topicId: topic.id,
+      examId: exam.id,
+      questionCount: selectedQuestions.length,
+      message: 'Exam creation DB flow completed successfully.',
+    })
+
+    return {
+      studentId: input.studentId,
+      subjectId: input.subjectId,
+      topicId: topic.id,
+      topicName: topic.name,
+      examId: exam.id,
+      status: exam.status,
+      questionCount: selectedQuestions.length,
+      questionIds: selectedQuestions.map((question) => question.id),
+      selectionSource: selection.selectionSource,
+      recommendationId: selection.recommendationId ?? null,
+      message: `נוצר תרגול חדש בנושא ${topic.name} עם ${selectedQuestions.length} שאלות.`,
+    }
+  }
+
+  private async selectPracticeTopic(
+    studentId: string,
+    subjectId: string,
+  ): Promise<PracticeTopicSelection | null> {
+    const topics = await this.repository.listTopicsForSubject(subjectId)
+    const subjectTopicIds = new Set(topics.map((topic) => topic.id))
+    const recommendations = await this.repository.listPendingPracticeRecommendations(studentId)
+
+    logExamGeneration('topic-selection-inputs', {
+      studentId,
+      subjectId,
+      subjectTopicCount: topics.length,
+      subjectTopicIds: Array.from(subjectTopicIds),
+      pendingPracticeRecommendationCount: recommendations.length,
+      pendingPracticeRecommendationIds: recommendations.map((recommendation) => recommendation.id),
+    })
+
+    for (const recommendation of recommendations) {
+      const analysisTopics = await this.repository.listAnalysisTopics(recommendation.analysisId)
+      const recommendedTopic = analysisTopics
+        .filter((analysisTopic) => subjectTopicIds.has(analysisTopic.topicId))
+        .filter((analysisTopic) => WEAK_ANALYSIS_TYPES.has(analysisTopic.type))
+        .sort(
+          (first, second) =>
+            (second.confidenceScore ?? 0) - (first.confidenceScore ?? 0) ||
+            second.createdAt.localeCompare(first.createdAt),
+        )[0]
+
+      if (recommendedTopic) {
+        logExamGeneration('topic-selected-from-recommendation', {
+          studentId,
+          subjectId,
+          recommendationId: recommendation.id,
+          analysisId: recommendation.analysisId,
+          topicId: recommendedTopic.topicId,
+          analysisTopicType: recommendedTopic.type,
+          confidenceScore: recommendedTopic.confidenceScore,
+        })
+
+        return {
+          topicId: recommendedTopic.topicId,
+          selectionSource: 'recommendation',
+          recommendationId: recommendation.id,
+        }
+      }
+    }
+
+    const grades = await this.repository.listGradesForSubject(studentId, subjectId)
+    const topicScores = new Map<string, { total: number; count: number; latestDate: string }>()
+
+    for (const grade of grades) {
+      const percentage = grade.maxScore === 0 ? 0 : Math.round((grade.score / grade.maxScore) * 100)
+      const current = topicScores.get(grade.topicId)
+
+      topicScores.set(grade.topicId, {
+        total: (current?.total ?? 0) + percentage,
+        count: (current?.count ?? 0) + 1,
+        latestDate:
+          current && current.latestDate.localeCompare(grade.date) > 0
+            ? current.latestDate
+            : grade.date,
+      })
+    }
+
+    const lowestGradeTopic = Array.from(topicScores.entries())
+      .map(([topicId, score]) => ({
+        topicId,
+        averageScore: score.count === 0 ? 0 : score.total / score.count,
+        latestDate: score.latestDate,
+      }))
+      .sort(
+        (first, second) =>
+          first.averageScore - second.averageScore ||
+          second.latestDate.localeCompare(first.latestDate),
+      )[0]
+
+    if (!lowestGradeTopic) {
+      logExamGeneration('topic-selection-empty', {
+        studentId,
+        subjectId,
+        gradeCount: grades.length,
+      })
+
+      return null
+    }
+
+    logExamGeneration('topic-selected-from-lowest-grade', {
+      studentId,
+      subjectId,
+      topicId: lowestGradeTopic.topicId,
+      averageScore: lowestGradeTopic.averageScore,
+      latestGradeDate: lowestGradeTopic.latestDate,
+      gradeCount: grades.length,
+    })
+
+    return {
+      topicId: lowestGradeTopic.topicId,
+      selectionSource: 'lowest_grade',
+      averageScore: lowestGradeTopic.averageScore,
+      latestGradeDate: lowestGradeTopic.latestDate,
+    }
+  }
+
   private async createFallbackQuestions(
     topicName: string,
     topicId: string,
@@ -174,7 +506,13 @@ export class QuestionService {
     missingCount: number,
   ): Promise<QuestionWithOptions[]> {
     if (!this.repository.isUsingRealDb()) {
-      return this.repository.saveQuestionsWithOptions(
+      logExamGeneration('fallback-questions-create-mock', {
+        topicId,
+        topicName,
+        missingQuestionCount: missingCount,
+      })
+
+      const questions = await this.repository.saveQuestionsWithOptions(
         deterministicFallbackQuestions(topicId, missingCount).map((question) => ({
           topicId,
           difficultyLevelId,
@@ -184,7 +522,23 @@ export class QuestionService {
           options: question.options,
         })),
       )
+
+      logExamGeneration('fallback-questions-saved', {
+        topicId,
+        generatedQuestionCount: questions.length,
+        generatedQuestionIds: questions.map((question) => question.id),
+        source: 'deterministic_mock',
+      })
+
+      return questions
     }
+
+    logExamGeneration('fallback-questions-create-ai', {
+      topicId,
+      topicName,
+      missingQuestionCount: missingCount,
+      model: 'claude-3-5-sonnet-latest',
+    })
 
     const message = await getAnthropic().messages.create({
       model: 'claude-3-5-sonnet-latest',
@@ -200,7 +554,7 @@ export class QuestionService {
     const rawText = firstBlock && firstBlock.type === 'text' ? firstBlock.text : parseClaudeText(message.content)
     const parsed = generatedQuestionSchema.parse(JSON.parse(rawText) as unknown)
 
-    return this.repository.saveQuestionsWithOptions(
+    const questions = await this.repository.saveQuestionsWithOptions(
       parsed.questions.map((question) => ({
         topicId,
         difficultyLevelId,
@@ -210,6 +564,15 @@ export class QuestionService {
         options: question.options,
       })),
     )
+
+    logExamGeneration('fallback-questions-saved', {
+      topicId,
+      generatedQuestionCount: questions.length,
+      generatedQuestionIds: questions.map((question) => question.id),
+      source: 'claude_fallback',
+    })
+
+    return questions
   }
 }
 

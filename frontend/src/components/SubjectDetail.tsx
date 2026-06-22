@@ -1,10 +1,12 @@
 import { motion } from 'framer-motion'
 import { ArrowRight, Loader2, Sparkles } from 'lucide-react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { AppBackground } from './AppBackground'
 import { BottomNavigation } from './BottomNavigation'
 import { SourceDot } from './SourceDot'
 import { StatusBadge } from './StatusBadge'
+import { api } from '../services/api'
 import { useSubjectDetail } from '../hooks/useSubjectDetail'
 
 export const SubjectDetail = () => {
@@ -21,6 +23,32 @@ export const SubjectDetail = () => {
   } = useSubjectDetail()
   const navigate = useNavigate()
   const riskMeta = getRiskMeta(detail.riskLevel)
+  const [isCreatingExam, setIsCreatingExam] = useState(false)
+  const [examNotification, setExamNotification] = useState<{
+    tone: 'success' | 'error'
+    text: string
+  } | null>(null)
+
+  const handleCreatePracticeExam = async () => {
+    setIsCreatingExam(true)
+    setExamNotification(null)
+
+    try {
+      const exam = await api.practice.generateSubjectPractice(student.id, detail.id)
+
+      setExamNotification({
+        tone: 'success',
+        text: `התרגול נוצר בהצלחה: ${exam.questionCount} שאלות בנושא ${exam.topicName}.`,
+      })
+    } catch (error) {
+      setExamNotification({
+        tone: 'error',
+        text: error instanceof Error ? error.message : 'לא הצלחנו ליצור תרגול כרגע.',
+      })
+    } finally {
+      setIsCreatingExam(false)
+    }
+  }
 
   return (
     <AppBackground className="pb-28">
@@ -188,10 +216,33 @@ export const SubjectDetail = () => {
               </p>
               <button
                 type="button"
-                className="mt-5 h-12 rounded-2xl bg-[#1A6B5A] px-5 text-sm font-black text-white shadow-lg shadow-[#1A6B5A]/20 transition hover:bg-[#155647] focus:outline-none focus:ring-4 focus:ring-[#1A6B5A]/20"
+                onClick={handleCreatePracticeExam}
+                disabled={isCreatingExam}
+                className="mt-5 inline-flex h-12 items-center justify-center gap-2 rounded-2xl bg-[#1A6B5A] px-5 text-sm font-black text-white shadow-lg shadow-[#1A6B5A]/20 transition hover:bg-[#155647] focus:outline-none focus:ring-4 focus:ring-[#1A6B5A]/20 disabled:cursor-not-allowed disabled:opacity-70"
               >
-                {isExcellent ? '✦ צור אתגר העשרה' : `✦ צור תרגול קצר ל${student.name}`}
+                {isCreatingExam ? (
+                  <>
+                    <Loader2 className="size-4 animate-spin" aria-hidden="true" />
+                    יוצר תרגול...
+                  </>
+                ) : isExcellent ? (
+                  '✦ צור אתגר העשרה'
+                ) : (
+                  `✦ צור תרגול קצר ל${student.name}`
+                )}
               </button>
+
+              {examNotification ? (
+                <div
+                  className={`mt-4 rounded-2xl p-4 text-sm font-black ${
+                    examNotification.tone === 'success'
+                      ? 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100'
+                      : 'bg-red-50 text-red-700 ring-1 ring-red-100'
+                  }`}
+                >
+                  {examNotification.text}
+                </div>
+              ) : null}
             </section>
           </motion.div>
         )}

@@ -1,4 +1,5 @@
 import type {
+  CreatedPracticeExamResponse,
   GeneratedLessonResponse,
   LoginResponse,
   OverviewResponse,
@@ -20,7 +21,19 @@ const request = async <ResponseBody>(
   })
 
   if (!response.ok) {
-    const message = await response.text()
+    const errorBody = await response.text()
+    let message = errorBody
+
+    try {
+      const parsedError = JSON.parse(errorBody) as { message?: unknown }
+
+      if (typeof parsedError.message === 'string') {
+        message = parsedError.message
+      }
+    } catch {
+      message = errorBody
+    }
+
     throw new Error(message || `Request failed with status ${response.status}`)
   }
 
@@ -95,6 +108,14 @@ const generateLesson = async (
     body: JSON.stringify({ studentId, topicId }),
   })
 
+const generateSubjectPractice = async (
+  studentId: string,
+  subjectId: string,
+): Promise<CreatedPracticeExamResponse> =>
+  request<CreatedPracticeExamResponse>(`/students/${studentId}/subject/${subjectId}/generate-practice`, {
+    method: 'POST',
+  })
+
 export const api = {
   auth: {
     login,
@@ -105,5 +126,6 @@ export const api = {
   },
   practice: {
     generateLesson,
+    generateSubjectPractice,
   },
 }

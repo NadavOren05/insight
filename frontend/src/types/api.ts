@@ -105,3 +105,17 @@ export interface GeneratedLessonResponse {
   practiceQuestions: PracticeQuestion[]
   parentPedagogicalGuide: ParentPedagogicalGuide
 }
+
+export interface CreatedPracticeExamResponse {
+  studentId: string
+  subjectId: string
+  topicId: string
+  topicName: string
+  examId: string
+  status: string
+  questionCount: number
+  questionIds: string[]
+  selectionSource: 'recommendation' | 'lowest_grade'
+  recommendationId: string | null
+  message: string
+}

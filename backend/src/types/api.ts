@@ -111,6 +111,20 @@ export interface GeneratedLessonResponse {
   parentPedagogicalGuide: ParentPedagogicalGuide
 }
 
+export interface CreatedPracticeExamResponse {
+  studentId: string
+  subjectId: string
+  topicId: string
+  topicName: string
+  examId: string
+  status: string
+  questionCount: number
+  questionIds: string[]
+  selectionSource: 'recommendation' | 'lowest_grade'
+  recommendationId: string | null
+  message: string
+}
+
 export interface RawSubjectBundle {
   student: Student
   subject: Subject

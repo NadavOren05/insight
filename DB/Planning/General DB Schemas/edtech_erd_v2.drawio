@@ -1,0 +1,115 @@
+<mxfile host="Electron" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/26.0.4 Chrome/128.0.6613.186 Electron/32.2.5 Safari/537.36" version="26.0.4">
+  <diagram id="edtech-erd-v2" name="EDTECH ERD v2">
+    <mxGraphModel dx="1151" dy="682" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2000" pageHeight="1400" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="schools" value="schools&#xa;PK id: uuid&#xa;name: text&#xa;city: text&#xa;district: text&#xa;peripheral_index: int&#xa;created_at: timestamp" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=10;spacingTop=8;fontFamily=Arial;fontSize=12;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+          <mxGeometry x="10" y="150" width="240" height="170" as="geometry" />
+        </mxCell>
+        <mxCell id="teachers" value="teachers&#xa;PK id: uuid&#xa;full_name: text&#xa;email: text&#xa;phone: text&#xa;FK school_id: uuid&#xa;created_at: timestamp" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=10;spacingTop=8;fontFamily=Arial;fontSize=12;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+          <mxGeometry x="340" y="40" width="250" height="190" as="geometry" />
+        </mxCell>
+        <mxCell id="classes" value="classes&#xa;PK id: uuid&#xa;FK school_id: uuid&#xa;name: text&#xa;grade: int&#xa;FK homeroom_teacher_id: uuid&#xa;created_at: timestamp" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=10;spacingTop=8;fontFamily=Arial;fontSize=12;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+          <mxGeometry x="640" y="40" width="280" height="190" as="geometry" />
+        </mxCell>
+        <mxCell id="students" value="students&#xa;PK id: uuid&#xa;full_name: text&#xa;FK class_id: uuid&#xa;created_at: timestamp" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=10;spacingTop=8;fontFamily=Arial;fontSize=12;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+          <mxGeometry x="980" y="40" width="250" height="150" as="geometry" />
+        </mxCell>
+        <mxCell id="parents" value="parents&#xa;PK id: uuid&#xa;full_name: text&#xa;phone: text&#xa;email: text&#xa;preferred_language: text&#xa;created_at: timestamp" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=10;spacingTop=8;fontFamily=Arial;fontSize=12;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
+          <mxGeometry x="980" y="260" width="270" height="190" as="geometry" />
+        </mxCell>
+        <mxCell id="student_parents" value="student_parents&#xa;PK id: uuid&#xa;FK student_id: uuid&#xa;FK parent_id: uuid&#xa;relation_type: text&#xa;is_primary_contact: boolean&#xa;created_at: timestamp" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=10;spacingTop=8;fontFamily=Arial;fontSize=12;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
+          <mxGeometry x="1320" y="160" width="300" height="210" as="geometry" />
+        </mxCell>
+        <mxCell id="subjects" value="subjects&#xa;PK id: uuid&#xa;name: text&#xa;FK class_id: uuid&#xa;FK teacher_id: uuid&#xa;created_at: timestamp" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=10;spacingTop=8;fontFamily=Arial;fontSize=12;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+          <mxGeometry x="40" y="330" width="260" height="180" as="geometry" />
+        </mxCell>
+        <mxCell id="topics" value="topics&#xa;PK id: uuid&#xa;FK subject_id: uuid&#xa;name: text&#xa;taught_date: date&#xa;created_at: timestamp" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=10;spacingTop=8;fontFamily=Arial;fontSize=12;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+          <mxGeometry x="90" y="850" width="260" height="180" as="geometry" />
+        </mxCell>
+        <mxCell id="grades" value="grades&#xa;PK id: uuid&#xa;FK student_id: uuid&#xa;FK topic_id: uuid&#xa;type: grade_type&#xa;score: int&#xa;max_score: int&#xa;date: date&#xa;notes: text" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=10;spacingTop=8;fontFamily=Arial;fontSize=12;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+          <mxGeometry x="500" y="330" width="280" height="240" as="geometry" />
+        </mxCell>
+        <mxCell id="attendance" value="attendance&#xa;PK id: uuid&#xa;FK student_id: uuid&#xa;FK topic_id: uuid&#xa;date: date&#xa;status: attendance_status&#xa;created_at: timestamp" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=10;spacingTop=8;fontFamily=Arial;fontSize=12;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+          <mxGeometry x="630" y="640" width="280" height="190" as="geometry" />
+        </mxCell>
+        <mxCell id="student_ai_analysis" value="student_ai_analysis&#xa;PK id: uuid&#xa;FK student_id: uuid&#xa;generated_at: timestamp&#xa;risk_level: int&#xa;trend: text&#xa;attendance_flag: boolean&#xa;parent_summary: text&#xa;created_at: timestamp" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=10;spacingTop=8;fontFamily=Arial;fontSize=12;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+          <mxGeometry x="1040" y="610" width="310" height="250" as="geometry" />
+        </mxCell>
+        <mxCell id="ai_analysis_topics" value="ai_analysis_topics&#xa;PK id: uuid&#xa;FK analysis_id: uuid&#xa;FK topic_id: uuid&#xa;type: topic_analysis_type&#xa;confidence_score: numeric&#xa;created_at: timestamp" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=10;spacingTop=8;fontFamily=Arial;fontSize=12;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+          <mxGeometry x="1420" y="610" width="310" height="210" as="geometry" />
+        </mxCell>
+        <mxCell id="recommendations" value="recommendations&#xa;PK id: uuid&#xa;FK analysis_id: uuid&#xa;FK student_id: uuid&#xa;title: text&#xa;description: text&#xa;recommendation_type: text&#xa;priority: int&#xa;status: recommendation_status&#xa;created_at: timestamp" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=10;spacingTop=8;fontFamily=Arial;fontSize=12;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+          <mxGeometry x="820" y="980" width="330" height="280" as="geometry" />
+        </mxCell>
+        <mxCell id="parent_actions" value="parent_actions&#xa;PK id: uuid&#xa;FK student_id: uuid&#xa;FK parent_id: uuid&#xa;FK recommendation_id: uuid&#xa;action_type: text&#xa;status: recommendation_status&#xa;completed_at: timestamp&#xa;parent_feedback: text&#xa;created_at: timestamp" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=10;spacingTop=8;fontFamily=Arial;fontSize=12;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
+          <mxGeometry x="1430" y="930" width="340" height="280" as="geometry" />
+        </mxCell>
+        <mxCell id="edge100" value="1:N" style="endArrow=ERmany;startArrow=ERone;html=1;rounded=0;strokeWidth=2;fontFamily=Arial;fontSize=11;" parent="1" source="schools" target="teachers" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge101" value="1:N" style="endArrow=ERmany;startArrow=ERone;html=1;rounded=0;strokeWidth=2;fontFamily=Arial;fontSize=11;" parent="1" source="schools" target="classes" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge102" value="homeroom" style="endArrow=ERmany;startArrow=ERone;html=1;rounded=0;strokeWidth=2;fontFamily=Arial;fontSize=11;" parent="1" source="teachers" target="classes" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge103" value="1:N" style="endArrow=ERmany;startArrow=ERone;html=1;rounded=0;strokeWidth=2;fontFamily=Arial;fontSize=11;" parent="1" source="classes" target="students" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge104" value="1:N" style="endArrow=ERmany;startArrow=ERone;html=1;rounded=0;strokeWidth=2;fontFamily=Arial;fontSize=11;" parent="1" source="classes" target="subjects" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge105" value="1:N" style="endArrow=ERmany;startArrow=ERone;html=1;rounded=0;strokeWidth=2;fontFamily=Arial;fontSize=11;" parent="1" source="teachers" target="subjects" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge106" value="1:N" style="endArrow=ERmany;startArrow=ERone;html=1;rounded=0;strokeWidth=2;fontFamily=Arial;fontSize=11;" parent="1" source="subjects" target="topics" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge107" value="1:N" style="endArrow=ERmany;startArrow=ERone;html=1;rounded=0;strokeWidth=2;fontFamily=Arial;fontSize=11;" parent="1" source="students" target="student_parents" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge108" value="1:N" style="endArrow=ERmany;startArrow=ERone;html=1;rounded=0;strokeWidth=2;fontFamily=Arial;fontSize=11;" parent="1" source="parents" target="student_parents" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge109" value="1:N" style="endArrow=ERmany;startArrow=ERone;html=1;rounded=0;strokeWidth=2;fontFamily=Arial;fontSize=11;" parent="1" source="students" target="grades" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge110" value="1:N" style="endArrow=ERmany;startArrow=ERone;html=1;rounded=0;strokeWidth=2;fontFamily=Arial;fontSize=11;" parent="1" source="topics" target="grades" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge111" value="1:N" style="endArrow=ERmany;startArrow=ERone;html=1;rounded=0;strokeWidth=2;fontFamily=Arial;fontSize=11;" parent="1" source="students" target="attendance" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge112" value="1:N" style="endArrow=ERmany;startArrow=ERone;html=1;rounded=0;strokeWidth=2;fontFamily=Arial;fontSize=11;" parent="1" source="topics" target="attendance" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge113" value="1:N" style="endArrow=ERmany;startArrow=ERone;html=1;rounded=0;strokeWidth=2;fontFamily=Arial;fontSize=11;" parent="1" source="students" target="student_ai_analysis" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge114" value="1:N" style="endArrow=ERmany;startArrow=ERone;html=1;rounded=0;strokeWidth=2;fontFamily=Arial;fontSize=11;" parent="1" source="student_ai_analysis" target="ai_analysis_topics" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge115" value="1:N" style="endArrow=ERmany;startArrow=ERone;html=1;rounded=0;strokeWidth=2;fontFamily=Arial;fontSize=11;" parent="1" source="topics" target="ai_analysis_topics" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge116" value="1:N" style="endArrow=ERmany;startArrow=ERone;html=1;rounded=0;strokeWidth=2;fontFamily=Arial;fontSize=11;" parent="1" source="student_ai_analysis" target="recommendations" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge117" value="1:N" style="endArrow=ERmany;startArrow=ERone;html=1;rounded=0;strokeWidth=2;fontFamily=Arial;fontSize=11;" parent="1" source="students" target="recommendations" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge118" value="1:N" style="endArrow=ERmany;startArrow=ERone;html=1;rounded=0;strokeWidth=2;fontFamily=Arial;fontSize=11;" parent="1" source="recommendations" target="parent_actions" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge119" value="1:N" style="endArrow=ERmany;startArrow=ERone;html=1;rounded=0;strokeWidth=2;fontFamily=Arial;fontSize=11;" parent="1" source="students" target="parent_actions" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge120" value="1:N" style="endArrow=ERmany;startArrow=ERone;html=1;rounded=0;strokeWidth=2;fontFamily=Arial;fontSize=11;" parent="1" source="parents" target="parent_actions" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

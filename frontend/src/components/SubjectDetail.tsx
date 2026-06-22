@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion'
 import { ArrowRight, Loader2, Sparkles } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 import { AppBackground } from './AppBackground'
 import { BottomNavigation } from './BottomNavigation'
 import { StatusBadge } from './StatusBadge'
@@ -15,9 +16,9 @@ export const SubjectDetail = () => {
     handleBack,
     isExcellent,
     isLoading,
-    navigateToScreen,
     student,
   } = useSubjectDetail()
+  const navigate = useNavigate()
   const riskMeta = getRiskMeta(detail.riskLevel)
 
   return (
@@ -182,7 +183,7 @@ export const SubjectDetail = () => {
         )}
       </div>
 
-      <BottomNavigation currentScreen="subject-detail" onNavigate={navigateToScreen} />
+      <BottomNavigation currentPath="/subject" onNavigate={navigate} />
     </AppBackground>
   )
 }

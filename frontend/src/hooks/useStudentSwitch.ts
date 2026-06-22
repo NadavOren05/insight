@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useAtom, useAtomValue, useSetAtom } from 'jotai'
 import {
   activeStudentIdAtom,
@@ -8,14 +9,9 @@ import {
   parentUserAtom,
   subjectProgressByStudentIdAtom,
 } from '../state/atoms'
-import {
-  defaultParentUser,
-  multiChildStudents,
-  nadavParentUser,
-  singleChildStudents,
-  yonatanStudent,
-} from '../data/mockData'
-import type { ParentUser, RiskLevel, RiskMeta, Screen, Student, SubjectProgress } from '../types/insight'
+import { api } from '../services/api'
+import { yonatanStudent } from '../data/mockData'
+import type { RiskLevel, RiskMeta, Screen, Student, SubjectProgress } from '../types/insight'
 
 interface UseStudentSwitchReturn {
   activeStudent: Student
@@ -28,7 +24,6 @@ interface UseStudentSwitchReturn {
   otherChildren: Student[]
   sortedSubjects: SubjectProgress[]
   closeSwitcher: () => void
-  configureLoginScenario: (credential: string) => Screen
   getRiskMeta: (riskLevel: RiskLevel) => RiskMeta
   navigateToScreen: (screen: Screen) => void
   openSubjectDetail: (subjectId: string) => void
@@ -36,8 +31,6 @@ interface UseStudentSwitchReturn {
   switchChild: (studentId: string) => void
   toggleSwitcher: () => void
 }
-
-const MULTI_CHILD_PARENT_NAME = 'נדב'
 
 const riskOrder: Record<RiskLevel, number> = {
   red: 0,
@@ -60,29 +53,15 @@ const riskMeta: Record<RiskLevel, RiskMeta> = {
   },
 }
 
-const createSingleParentUser = (credential: string): ParentUser => {
-  const trimmedCredential = credential.trim()
-
-  if (trimmedCredential.length === 0) {
-    return defaultParentUser
-  }
-
-  return {
-    id: 'parent-single',
-    name: trimmedCredential,
-    phone: trimmedCredential,
-  }
-}
-
 export const useStudentSwitch = (): UseStudentSwitchReturn => {
   const [isSwitcherOpen, setIsSwitcherOpen] = useState(false)
-  const [children, setChildren] = useAtom(childrenAtom)
+  const children = useAtomValue(childrenAtom)
   const [activeStudentId, setActiveStudentId] = useAtom(activeStudentIdAtom)
   const [currentScreen, setCurrentScreen] = useAtom(currentScreenAtom)
   const parentUser = useAtomValue(parentUserAtom)
-  const progressByStudentId = useAtomValue(subjectProgressByStudentIdAtom)
-  const setParentUser = useSetAtom(parentUserAtom)
+  const [progressByStudentId, setProgressByStudentId] = useAtom(subjectProgressByStudentIdAtom)
   const setActiveSubjectId = useSetAtom(activeSubjectIdAtom)
+  const navigate = useNavigate()
 
   const activeStudent =
     children.find((student) => student.id === activeStudentId) ?? children[0] ?? yonatanStudent
@@ -100,26 +79,37 @@ export const useStudentSwitch = (): UseStudentSwitchReturn => {
       ? `${activeStudent.name} צריך חיזוק ממוקד ב${focusSubject.name}. הפער המרכזי הוא בנושא ${missingLesson}, וכדאי להשלים אותו לפני המעבר לתרגול מתקדם.`
       : `${activeStudent.name} מתקדם בצורה יציבה. כדאי לשמר רצף תרגול קצר כדי לזהות פערים מוקדם.`
 
-  const configureLoginScenario = (credential: string): Screen => {
-    const trimmedCredential = credential.trim()
-    const isMultiChildScenario = trimmedCredential === MULTI_CHILD_PARENT_NAME
-
-    if (isMultiChildScenario) {
-      setParentUser(nadavParentUser)
-      setChildren(multiChildStudents)
-      setActiveStudentId('')
-      return 'child-select'
+  useEffect(() => {
+    if (activeStudent.id.length === 0) {
+      return
     }
 
-    setParentUser(createSingleParentUser(trimmedCredential))
-    setChildren(singleChildStudents)
-    setActiveStudentId(yonatanStudent.id)
-    return 'home'
-  }
+    let isMounted = true
+
+    const loadOverview = async () => {
+      const overview = await api.students.getOverview(activeStudent.id)
+
+      if (!isMounted) {
+        return
+      }
+
+      setProgressByStudentId((currentProgress) => ({
+        ...currentProgress,
+        [activeStudent.id]: overview.subjects,
+      }))
+    }
+
+    void loadOverview()
+
+    return () => {
+      isMounted = false
+    }
+  }, [activeStudent.id, setProgressByStudentId])
 
   const selectChild = (studentId: string) => {
     setActiveStudentId(studentId)
     setCurrentScreen('home')
+    navigate('/home')
   }
 
   const switchChild = (studentId: string) => {
@@ -130,6 +120,7 @@ export const useStudentSwitch = (): UseStudentSwitchReturn => {
   const openSubjectDetail = (subjectId: string) => {
     setActiveSubjectId(subjectId)
     setCurrentScreen('subject-detail')
+    navigate(`/subject/${subjectId}`)
   }
 
   return {
@@ -143,7 +134,6 @@ export const useStudentSwitch = (): UseStudentSwitchReturn => {
     otherChildren,
     sortedSubjects,
     closeSwitcher: () => setIsSwitcherOpen(false),
-    configureLoginScenario,
     getRiskMeta: (riskLevel) => riskMeta[riskLevel],
     navigateToScreen: setCurrentScreen,
     openSubjectDetail,

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
-import { useAtomValue, useSetAtom } from 'jotai'
+import { useNavigate, useParams } from 'react-router-dom'
+import { useAtom, useAtomValue, useSetAtom } from 'jotai'
 import {
   activeStudentIdAtom,
   activeSubjectIdAtom,
@@ -8,6 +9,7 @@ import {
   subjectDataByStudentIdAtom,
   subjectProgressByStudentIdAtom,
 } from '../state/atoms'
+import { api } from '../services/api'
 import { yonatanStudent } from '../data/mockData'
 import type {
   Grade,
@@ -116,13 +118,17 @@ export const useSubjectDetail = (): UseSubjectDetailReturn => {
   const [isLoading, setIsLoading] = useState(true)
   const activeStudentId = useAtomValue(activeStudentIdAtom)
   const activeSubjectId = useAtomValue(activeSubjectIdAtom)
+  const { subjectId } = useParams<{ subjectId: string }>()
   const children = useAtomValue(childrenAtom)
   const progressByStudentId = useAtomValue(subjectProgressByStudentIdAtom)
-  const detailByStudentId = useAtomValue(subjectDataByStudentIdAtom)
+  const [detailByStudentId, setDetailByStudentId] = useAtom(subjectDataByStudentIdAtom)
   const setCurrentScreen = useSetAtom(currentScreenAtom)
+  const navigate = useNavigate()
+  const resolvedSubjectId = subjectId ?? activeSubjectId
 
   const student = children.find((child) => child.id === activeStudentId) ?? children[0] ?? yonatanStudent
   const detail =
+    detailByStudentId[student.id]?.[resolvedSubjectId] ??
     detailByStudentId[student.id]?.[activeSubjectId] ??
     detailByStudentId[student.id]?.[progressByStudentId[student.id]?.[0]?.id ?? ''] ??
     fallbackSubjectData
@@ -142,7 +148,58 @@ export const useSubjectDetail = (): UseSubjectDetailReturn => {
     }, MIN_LOADING_MS)
 
     return () => window.clearTimeout(timerId)
-  }, [])
+  }, [activeStudentId, resolvedSubjectId])
+
+  useEffect(() => {
+    let isMounted = true
+
+    const loadSubjectDetail = async () => {
+      const response = await api.students.getSubjectDetail(student.id, resolvedSubjectId)
+
+      if (!isMounted) {
+        return
+      }
+
+      setDetailByStudentId((currentDetails) => ({
+        ...currentDetails,
+        [student.id]: {
+          ...currentDetails[student.id],
+          [resolvedSubjectId]: {
+            id: response.subjectId,
+            name: response.name,
+            riskLevel: response.riskLevel,
+            aiSummary: response.aiSummary,
+            topics: response.topics,
+            attendance: {
+              percentage: response.attendance.percentage,
+              attendanceFlag: response.attendance.attendanceFlag,
+              relevantAbsences: response.attendance.relevantAbsences,
+            },
+            grades: response.grades,
+          },
+        },
+      }))
+    }
+
+    void loadSubjectDetail()
+
+    return () => {
+      isMounted = false
+    }
+  }, [resolvedSubjectId, setDetailByStudentId, student.id])
+
+  const navigateToScreen = (screen: Screen) => {
+    setCurrentScreen(screen)
+
+    if (screen === 'home') {
+      navigate('/home')
+      return
+    }
+
+    if (screen === 'profile') {
+      navigate('/profile')
+    }
+  }
 
   return {
     attendanceDatesText,
@@ -157,10 +214,10 @@ export const useSubjectDetail = (): UseSubjectDetailReturn => {
       }
     },
     getTopicMeta: (status) => topicMeta[status],
-    handleBack: () => setCurrentScreen('home'),
+    handleBack: () => navigateToScreen('home'),
     isExcellent,
     isLoading,
-    navigateToScreen: setCurrentScreen,
+    navigateToScreen,
     student,
   }
 }

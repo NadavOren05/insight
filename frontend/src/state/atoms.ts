@@ -13,12 +13,37 @@ import type {
   SubjectDataByStudentId,
   SubjectProgressByStudentId,
 } from '../types/insight'
+import { isSessionExpired, readStoredSession } from '../utils/session'
 
-export const parentUserAtom = atom<ParentUser>(defaultParentUser)
+const storedSession = readStoredSession()
+const hasValidStoredSession =
+  storedSession !== null && !isSessionExpired(storedSession.expiryTimestamp)
 
-export const childrenAtom = atom<Student[]>(singleChildStudents)
+export const parentUserAtom = atom<ParentUser>(
+  hasValidStoredSession
+    ? {
+        id: storedSession.parentId,
+        name: storedSession.parentName,
+        phone: '',
+      }
+    : defaultParentUser,
+)
 
-export const activeStudentIdAtom = atom<string>(yonatanStudent.id)
+export const authTokenAtom = atom<string | null>(
+  hasValidStoredSession ? storedSession.authToken : null,
+)
+
+export const sessionExpiryAtom = atom<number | null>(
+  hasValidStoredSession ? storedSession.expiryTimestamp : null,
+)
+
+export const childrenAtom = atom<Student[]>(
+  hasValidStoredSession ? storedSession.children : singleChildStudents,
+)
+
+export const activeStudentIdAtom = atom<string>(
+  hasValidStoredSession ? (storedSession.children[0]?.id ?? yonatanStudent.id) : yonatanStudent.id,
+)
 
 export const activeSubjectIdAtom = atom<string>('math')
 
@@ -29,4 +54,4 @@ export const subjectDataByStudentIdAtom = atom<SubjectDataByStudentId>(subjectDa
 
 export const currentScreenAtom = atom<Screen>('login')
 
-export const isAuthenticatedAtom = atom<boolean>(false)
+export const isAuthenticatedAtom = atom<boolean>(hasValidStoredSession)

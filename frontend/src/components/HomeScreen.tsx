@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion'
 import { Menu, Sparkles, UserRound } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 import { AppBackground } from './AppBackground'
 import { BottomNavigation } from './BottomNavigation'
 import { SubjectCard } from './SubjectCard'
@@ -16,12 +17,12 @@ export const HomeScreen = () => {
     otherChildren,
     sortedSubjects,
     currentScreen,
-    navigateToScreen,
     openSubjectDetail,
     getRiskMeta,
     switchChild,
     toggleSwitcher,
   } = useHomeScreen()
+  const navigate = useNavigate()
 
   return (
     <AppBackground className="pb-28">
@@ -136,7 +137,7 @@ export const HomeScreen = () => {
         )}
       </div>
 
-      <BottomNavigation currentScreen={currentScreen} onNavigate={navigateToScreen} />
+      <BottomNavigation currentPath="/home" onNavigate={navigate} />
     </AppBackground>
   )
 }

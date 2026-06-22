@@ -1,8 +1,17 @@
 import type { ChangeEvent, FormEvent } from 'react'
 import { useState } from 'react'
 import { useSetAtom } from 'jotai'
-import { currentScreenAtom, isAuthenticatedAtom } from '../state/atoms'
-import { useStudentSwitch } from './useStudentSwitch'
+import { useNavigate } from 'react-router-dom'
+import {
+  activeStudentIdAtom,
+  authTokenAtom,
+  childrenAtom,
+  isAuthenticatedAtom,
+  parentUserAtom,
+  sessionExpiryAtom,
+} from '../state/atoms'
+import { api } from '../services/api'
+import { createExpiryTimestamp, persistSession } from '../utils/session'
 
 interface UseLoginScreenReturn {
   credential: string
@@ -17,8 +26,12 @@ export const useLoginScreen = (): UseLoginScreenReturn => {
   const [credential, setCredential] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const setIsAuthenticated = useSetAtom(isAuthenticatedAtom)
-  const setCurrentScreen = useSetAtom(currentScreenAtom)
-  const { configureLoginScenario } = useStudentSwitch()
+  const setAuthToken = useSetAtom(authTokenAtom)
+  const setSessionExpiry = useSetAtom(sessionExpiryAtom)
+  const setParentUser = useSetAtom(parentUserAtom)
+  const setChildren = useSetAtom(childrenAtom)
+  const setActiveStudentId = useSetAtom(activeStudentIdAtom)
+  const navigate = useNavigate()
 
   const handleCredentialChange = (event: ChangeEvent<HTMLInputElement>) => {
     setCredential(event.target.value)
@@ -31,13 +44,37 @@ export const useLoginScreen = (): UseLoginScreenReturn => {
       return
     }
 
-    setIsLoading(true)
+    const loginUser = async () => {
+      setIsLoading(true)
+
+      const loginResponse = await api.auth.login(credential)
+      const expiryTimestamp = createExpiryTimestamp()
+      persistSession(loginResponse, expiryTimestamp)
+
+      setAuthToken(loginResponse.authToken)
+      setSessionExpiry(expiryTimestamp)
+      setParentUser({
+        id: loginResponse.parentId,
+        name: loginResponse.parentName,
+        phone: credential.trim(),
+      })
+      setChildren(loginResponse.children)
+      setIsAuthenticated(true)
+      const firstChildId = loginResponse.children[0]?.id
+
+      if (loginResponse.children.length > 1) {
+        setActiveStudentId('')
+        navigate('/child-selection', { replace: true })
+      } else if (firstChildId) {
+        setActiveStudentId(firstChildId)
+        navigate('/home', { replace: true })
+      }
+
+      setIsLoading(false)
+    }
 
     window.setTimeout(() => {
-      const nextScreen = configureLoginScenario(credential)
-      setIsAuthenticated(true)
-      setCurrentScreen(nextScreen)
-      setIsLoading(false)
+      void loginUser()
     }, LOGIN_DELAY_MS)
   }
 

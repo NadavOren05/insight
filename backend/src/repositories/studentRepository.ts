@@ -240,6 +240,10 @@ export class StudentRepository {
     return this.useRealDb
   }
 
+  private canUseMockFallback(): boolean {
+    return !this.useRealDb || env.ALLOW_MOCK_FALLBACK
+  }
+
   private findMockParentWithChildren(fullName: string, phone: string): ParentWithChildren | null {
     const trimmedFullName = fullName.trim()
     const trimmedPhone = phone.trim()
@@ -307,8 +311,12 @@ export class StudentRepository {
       throw new AppError('Failed to fetch parent', 500, error.message)
     }
 
-    if (!data) {
+    if (!data && this.canUseMockFallback()) {
       return this.findMockParentWithChildren(trimmedFullName, trimmedPhone)
+    }
+
+    if (!data) {
+      return null
     }
 
     const row = ensureRecord(data)
@@ -337,8 +345,12 @@ export class StudentRepository {
       return mapStudent(ensureRecord(data))
     }
 
-    const mockStudent = mockStudents.find((student) => student.id === studentId)
-    return mockStudent ? withSource(mockStudent, 'mock') : null
+    if (this.canUseMockFallback()) {
+      const mockStudent = mockStudents.find((student) => student.id === studentId)
+      return mockStudent ? withSource(mockStudent, 'mock') : null
+    }
+
+    return null
   }
 
   public async findClassById(classId: string): Promise<Class | null> {
@@ -357,8 +369,12 @@ export class StudentRepository {
       return mapClass(ensureRecord(data))
     }
 
-    const mockClass = mockClasses.find((item) => item.id === classId)
-    return mockClass ? withSource(mockClass, 'mock') : null
+    if (this.canUseMockFallback()) {
+      const mockClass = mockClasses.find((item) => item.id === classId)
+      return mockClass ? withSource(mockClass, 'mock') : null
+    }
+
+    return null
   }
 
   public async listSubjectsForStudent(studentId: string): Promise<Subject[]> {
@@ -400,6 +416,10 @@ export class StudentRepository {
       return subjects
     }
 
+    if (!this.canUseMockFallback()) {
+      return []
+    }
+
     const topicSubjectIds = new Set(
       [...mockGrades, ...mockAttendance]
         .filter((item) => item.studentId === studentId)
@@ -431,8 +451,12 @@ export class StudentRepository {
       return mapSubject(ensureRecord(data))
     }
 
-    const mockSubject = mockSubjects.find((subject) => subject.id === subjectId)
-    return mockSubject ? withSource(mockSubject, 'mock') : null
+    if (this.canUseMockFallback()) {
+      const mockSubject = mockSubjects.find((subject) => subject.id === subjectId)
+      return mockSubject ? withSource(mockSubject, 'mock') : null
+    }
+
+    return null
   }
 
   public async listTopicsForSubject(subjectId: string): Promise<Topic[]> {
@@ -447,7 +471,12 @@ export class StudentRepository {
     }
 
     const topics = (Array.isArray(data) ? data : []).map((row) => mapTopic(ensureRecord(row)))
-    return topics.length > 0 ? topics : markAll(mockTopics.filter((topic) => topic.subjectId === subjectId), 'mock')
+
+    if (topics.length > 0 || !this.canUseMockFallback()) {
+      return topics
+    }
+
+    return markAll(mockTopics.filter((topic) => topic.subjectId === subjectId), 'mock')
   }
 
   public async findTopicById(topicId: string): Promise<Topic | null> {
@@ -466,8 +495,12 @@ export class StudentRepository {
       return mapTopic(ensureRecord(data))
     }
 
-    const mockTopic = mockTopics.find((topic) => topic.id === topicId)
-    return mockTopic ? withSource(mockTopic, 'mock') : null
+    if (this.canUseMockFallback()) {
+      const mockTopic = mockTopics.find((topic) => topic.id === topicId)
+      return mockTopic ? withSource(mockTopic, 'mock') : null
+    }
+
+    return null
   }
 
   public async listGradesForSubject(studentId: string, subjectId: string): Promise<GradeWithTopic[]> {
@@ -522,6 +555,10 @@ export class StudentRepository {
 
     if (grades.length > 0) {
       return grades
+    }
+
+    if (!this.canUseMockFallback()) {
+      return []
     }
 
     return mockGrades
@@ -595,6 +632,10 @@ export class StudentRepository {
       return attendanceRows
     }
 
+    if (!this.canUseMockFallback()) {
+      return []
+    }
+
     return mockAttendance
       .filter((attendance) => {
         const topic = mockTopics.find((item) => item.id === attendance.topicId)
@@ -640,8 +681,12 @@ export class StudentRepository {
       return mapAnalysis(ensureRecord(data))
     }
 
-    const mockAnalysis = mockAnalyses.find((analysis) => analysis.studentId === studentId)
-    return mockAnalysis ? withSource(mockAnalysis, 'mock') : null
+    if (this.canUseMockFallback()) {
+      const mockAnalysis = mockAnalyses.find((analysis) => analysis.studentId === studentId)
+      return mockAnalysis ? withSource(mockAnalysis, 'mock') : null
+    }
+
+    return null
   }
 
   public async saveAnalysis(input: AnalysisInput): Promise<StudentAIAnalysis> {
@@ -797,6 +842,10 @@ export class StudentRepository {
 
     if (questions.length > 0) {
       return questions
+    }
+
+    if (!this.canUseMockFallback()) {
+      return []
     }
 
     return mockQuestions

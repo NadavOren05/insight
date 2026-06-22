@@ -1013,20 +1013,7 @@ export class StudentRepository {
       }
     })
 
-    if (questions.length > 0 || !this.canUseMockFallback()) {
-      return questions
-    }
-
-    return mockQuestions
-      .filter((question) => question.topicId === topicId && question.isActive)
-      .map((question) => ({
-        ...question,
-        _source: 'mock',
-        options: mockQuestionOptions
-          .filter((option) => option.questionId === question.id)
-          .map((option) => withSource(option, 'mock'))
-          .sort((first, second) => first.sortOrder - second.sortOrder),
-      }))
+    return questions
   }
 
   public async saveQuestionsWithOptions(inputs: GeneratedQuestionInput[]): Promise<QuestionWithOptions[]> {

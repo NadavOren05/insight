@@ -298,6 +298,18 @@ export class QuestionService {
       throw new AppError('Topic was not found', 404)
     }
 
+    if (this.repository.isUsingRealDb() && topic._source !== 'database') {
+      logExamGeneration('topic-source-mismatch', {
+        studentId: input.studentId,
+        subjectId: input.subjectId,
+        topicId: selection.topicId,
+        topicSource: topic._source ?? null,
+        message: 'Real DB exam creation cannot use a mock topic.',
+      })
+
+      throw new AppError('Cannot create a real exam from mock topic data', 409)
+    }
+
     const questionBank = await this.repository.listQuestionsByTopic(selection.topicId)
 
     logExamGeneration('question-bank-loaded', {
@@ -322,6 +334,7 @@ export class QuestionService {
     }
 
     const selectedQuestions = shuffleQuestions(questionBank).slice(0, MIN_QUESTION_COUNT)
+    const mismatchedQuestions = selectedQuestions.filter((question) => question.topicId !== topic.id)
 
     logExamGeneration('random-questions-selected', {
       studentId: input.studentId,
@@ -329,8 +342,26 @@ export class QuestionService {
       topicId: topic.id,
       requestedQuestionCount: MIN_QUESTION_COUNT,
       selectedQuestionCount: selectedQuestions.length,
-      selectedQuestionIds: selectedQuestions.map((question) => question.id),
+      selectedQuestions: selectedQuestions.map((question) => ({
+        id: question.id,
+        topicId: question.topicId,
+      })),
     })
+
+    if (mismatchedQuestions.length > 0) {
+      logExamGeneration('question-topic-mismatch-blocked', {
+        studentId: input.studentId,
+        subjectId: input.subjectId,
+        targetTopicId: topic.id,
+        mismatchedQuestions: mismatchedQuestions.map((question) => ({
+          id: question.id,
+          questionTopicId: question.topicId,
+        })),
+        message: 'Exam was not created because selected questions did not match target topic.',
+      })
+
+      throw new AppError('Selected questions do not match the exam target topic', 409)
+    }
 
     const exam = await this.repository.createGeneratedExam({
       studentId: input.studentId,
@@ -353,6 +384,19 @@ export class QuestionService {
       status: exam.status,
       table: 'generated_exams',
     })
+
+    if (exam.targetTopicId !== topic.id) {
+      logExamGeneration('exam-target-topic-mismatch-blocked', {
+        studentId: input.studentId,
+        subjectId: input.subjectId,
+        examId: exam.id,
+        expectedTargetTopicId: topic.id,
+        actualTargetTopicId: exam.targetTopicId,
+        message: 'Exam questions were not attached because generated exam target topic mismatched selected topic.',
+      })
+
+      throw new AppError('Generated exam target topic does not match selected topic', 409)
+    }
 
     const examQuestions = await this.repository.addQuestionsToExam(
       exam.id,

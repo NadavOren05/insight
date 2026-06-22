@@ -1,7 +1,13 @@
 import type {
+  CreatedPracticeExamResponse,
+  ExamFinishResult,
+  ExamPracticeResponse,
+  ExamRetryResult,
+  ExamSubmissionResult,
   GeneratedLessonResponse,
   LoginResponse,
   OverviewResponse,
+  SubjectExamSummary,
   SubjectDetailResponse,
 } from '../types/api'
 
@@ -20,7 +26,19 @@ const request = async <ResponseBody>(
   })
 
   if (!response.ok) {
-    const message = await response.text()
+    const errorBody = await response.text()
+    let message = errorBody
+
+    try {
+      const parsedError = JSON.parse(errorBody) as { message?: unknown }
+
+      if (typeof parsedError.message === 'string') {
+        message = parsedError.message
+      }
+    } catch {
+      message = errorBody
+    }
+
     throw new Error(message || `Request failed with status ${response.status}`)
   }
 
@@ -86,6 +104,17 @@ const getSubjectDetail = async (
   }
 }
 
+const listSubjectExams = async (
+  studentId: string,
+  subjectId: string,
+): Promise<SubjectExamSummary[]> => {
+  const response = await request<{ exams: SubjectExamSummary[] }>(
+    `/students/${studentId}/subject/${subjectId}/exams`,
+  )
+
+  return response.exams
+}
+
 const generateLesson = async (
   studentId: string,
   topicId: string,
@@ -95,6 +124,37 @@ const generateLesson = async (
     body: JSON.stringify({ studentId, topicId }),
   })
 
+const generateSubjectPractice = async (
+  studentId: string,
+  subjectId: string,
+): Promise<CreatedPracticeExamResponse> =>
+  request<CreatedPracticeExamResponse>(`/students/${studentId}/subject/${subjectId}/generate-practice`, {
+    method: 'POST',
+  })
+
+const getExamPractice = async (examId: string): Promise<ExamPracticeResponse> =>
+  request<ExamPracticeResponse>(`/exams/${examId}/practice`)
+
+const submitExam = async (
+  examId: string,
+  studentId: string,
+  answers: Array<{ examQuestionId: string; selectedOptionId: string }>,
+): Promise<ExamSubmissionResult> =>
+  request<ExamSubmissionResult>(`/exams/${examId}/submit`, {
+    method: 'POST',
+    body: JSON.stringify({ studentId, answers }),
+  })
+
+const retryExam = async (examId: string): Promise<ExamRetryResult> =>
+  request<ExamRetryResult>(`/exams/${examId}/retry`, {
+    method: 'POST',
+  })
+
+const finishExam = async (examId: string): Promise<ExamFinishResult> =>
+  request<ExamFinishResult>(`/exams/${examId}`, {
+    method: 'DELETE',
+  })
+
 export const api = {
   auth: {
     login,
@@ -102,8 +162,14 @@ export const api = {
   students: {
     getOverview,
     getSubjectDetail,
+    listSubjectExams,
   },
   practice: {
     generateLesson,
+    generateSubjectPractice,
+    getExamPractice,
+    submitExam,
+    retryExam,
+    finishExam,
   },
 }

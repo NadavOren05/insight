@@ -111,6 +111,83 @@ export interface GeneratedLessonResponse {
   parentPedagogicalGuide: ParentPedagogicalGuide
 }
 
+export interface CreatedPracticeExamResponse {
+  studentId: string
+  subjectId: string
+  topicId: string
+  topicName: string
+  examId: string
+  status: string
+  questionCount: number
+  questionIds: string[]
+  selectionSource: 'recommendation' | 'lowest_grade'
+  recommendationId: string | null
+  message: string
+}
+
+export interface SubjectExamSummary extends ApiSourceMeta {
+  id: string
+  studentId: string
+  subjectId: string
+  topicId: string | null
+  topicName: string
+  title: string
+  status: string
+  questionCount: number
+  createdAt: string
+  completedAt: string | null
+}
+
+export interface ExamPracticeOption extends ApiSourceMeta {
+  id: string
+  optionText: string
+  sortOrder: number
+}
+
+export interface ExamPracticeQuestion extends ApiSourceMeta {
+  examQuestionId: string
+  questionId: string
+  questionText: string
+  questionTypeCode: string
+  points: number
+  sortOrder: number
+  options: ExamPracticeOption[]
+}
+
+export interface ExamPracticeResponse extends ApiSourceMeta {
+  id: string
+  studentId: string
+  title: string
+  status: string
+  targetTopicId: string | null
+  questions: ExamPracticeQuestion[]
+}
+
+export interface ExamSubmissionAnswerInput {
+  examQuestionId: string
+  selectedOptionId: string
+}
+
+export interface ExamSubmissionResult {
+  examId: string
+  studentId: string
+  correctCount: number
+  totalQuestions: number
+  percentageScore: number
+}
+
+export interface ExamFinishResult {
+  examId: string
+  deletedStudentAnswerCount: number
+  deletedExamQuestionCount: number
+  deletedGeneratedExamCount: number
+}
+
+export interface ExamRetryResult {
+  examId: string
+  deletedStudentAnswerCount: number
+}
+
 export interface RawSubjectBundle {
   student: Student
   subject: Subject

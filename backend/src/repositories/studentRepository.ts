@@ -13,6 +13,8 @@ import {
   mockQuestionTypes,
   mockQuestionOptions,
   mockQuestions,
+  mockRecommendations,
+  mockStudentAnswers,
   mockStudentParents,
   mockStudents,
   mockSubjects,
@@ -35,8 +37,10 @@ import type {
   QuestionOption,
   QuestionType,
   QuestionWithOptions,
+  Recommendation,
   RecommendationStatus,
   Student,
+  StudentAnswer,
   StudentAIAnalysis,
   Subject,
   Topic,
@@ -86,6 +90,33 @@ interface GeneratedQuestionInput {
     isCorrect: boolean
     sortOrder: number
   }>
+}
+
+export interface GeneratedExamWithTopic extends GeneratedExam {
+  subjectId: string | null
+  topicName: string | null
+  questionCount: number
+}
+
+export interface ExamQuestionWithQuestion extends ExamQuestion {
+  question: QuestionWithOptions & {
+    questionType: QuestionType
+  }
+}
+
+export interface GeneratedExamPractice {
+  exam: GeneratedExam
+  examQuestions: ExamQuestionWithQuestion[]
+}
+
+interface StudentAnswerInput {
+  examQuestionId: string
+  studentId: string
+  selectedOptionId: string
+  answerText: string
+  isCorrect: boolean
+  score: number
+  answeredAt: string
 }
 
 const ensureRecord = (value: unknown): Record<string, unknown> => {
@@ -223,6 +254,32 @@ const mapExamQuestion = (row: Record<string, unknown>): ExamQuestion => ({
   questionId: String(row.question_id ?? row.questionId ?? ''),
   sortOrder: Number(row.sort_order ?? row.sortOrder ?? 0),
   points: Number(row.points ?? 1),
+  createdAt: String(row.created_at ?? row.createdAt ?? ''),
+})
+
+const mapAnalysisTopic = (row: Record<string, unknown>): AIAnalysisTopic => ({
+  _source: 'database',
+  id: String(row.id),
+  analysisId: String(row.analysis_id ?? row.analysisId ?? ''),
+  topicId: String(row.topic_id ?? row.topicId ?? ''),
+  type: String(row.type ?? ''),
+  confidenceScore:
+    row.confidence_score === null || row.confidence_score === undefined
+      ? null
+      : Number(row.confidence_score),
+  createdAt: String(row.created_at ?? row.createdAt ?? ''),
+})
+
+const mapRecommendation = (row: Record<string, unknown>): Recommendation => ({
+  _source: 'database',
+  id: String(row.id),
+  analysisId: String(row.analysis_id ?? row.analysisId ?? ''),
+  studentId: String(row.student_id ?? row.studentId ?? ''),
+  title: String(row.title ?? ''),
+  description: String(row.description ?? ''),
+  recommendationType: nullableString(row.recommendation_type ?? row.recommendationType),
+  priority: Number(row.priority ?? 0),
+  status: String(row.status ?? 'pending'),
   createdAt: String(row.created_at ?? row.createdAt ?? ''),
 })
 
@@ -759,6 +816,86 @@ export class StudentRepository {
     }
   }
 
+  public async listPendingPracticeRecommendations(studentId: string): Promise<Recommendation[]> {
+    if (!this.useRealDb) {
+      return markAll(
+        mockRecommendations
+          .filter(
+            (recommendation) =>
+              recommendation.studentId === studentId &&
+              recommendation.status === 'pending' &&
+              recommendation.recommendationType === 'practice',
+          )
+          .sort((first, second) => first.priority - second.priority || second.createdAt.localeCompare(first.createdAt)),
+        'mock',
+      )
+    }
+
+    const { data, error } = await this.client
+      .from('recommendations')
+      .select('*')
+      .eq('student_id', studentId)
+      .eq('status', 'pending')
+      .eq('recommendation_type', 'practice')
+      .order('priority', { ascending: true })
+      .order('created_at', { ascending: false })
+
+    if (error) {
+      throw new AppError('Failed to fetch recommendations', 500, error.message)
+    }
+
+    const recommendations = (Array.isArray(data) ? data : []).map((row) =>
+      mapRecommendation(ensureRecord(row)),
+    )
+
+    if (recommendations.length > 0 || !this.canUseMockFallback()) {
+      return recommendations
+    }
+
+    return markAll(
+      mockRecommendations
+        .filter(
+          (recommendation) =>
+            recommendation.studentId === studentId &&
+            recommendation.status === 'pending' &&
+            recommendation.recommendationType === 'practice',
+        )
+        .sort((first, second) => first.priority - second.priority || second.createdAt.localeCompare(first.createdAt)),
+      'mock',
+    )
+  }
+
+  public async listAnalysisTopics(analysisId: string): Promise<AIAnalysisTopic[]> {
+    if (!this.useRealDb) {
+      return markAll(
+        mockAnalysisTopics.filter((analysisTopic) => analysisTopic.analysisId === analysisId),
+        'mock',
+      )
+    }
+
+    const { data, error } = await this.client
+      .from('ai_analysis_topics')
+      .select('*')
+      .eq('analysis_id', analysisId)
+
+    if (error) {
+      throw new AppError('Failed to fetch analysis topics', 500, error.message)
+    }
+
+    const analysisTopics = (Array.isArray(data) ? data : []).map((row) =>
+      mapAnalysisTopic(ensureRecord(row)),
+    )
+
+    if (analysisTopics.length > 0 || !this.canUseMockFallback()) {
+      return analysisTopics
+    }
+
+    return markAll(
+      mockAnalysisTopics.filter((analysisTopic) => analysisTopic.analysisId === analysisId),
+      'mock',
+    )
+  }
+
   public async findDifficultyByCode(code: string): Promise<QuestionDifficultyLevel | null> {
     if (!this.useRealDb) {
       const difficulty = mockDifficultyLevels.find((item) => item.code === code)
@@ -863,6 +1000,101 @@ export class StudentRepository {
           .map((option) => withSource(option, 'mock'))
           .sort((first, second) => first.sortOrder - second.sortOrder),
       }))
+  }
+
+  public async listQuestionsByTopic(topicId: string): Promise<QuestionWithOptions[]> {
+    if (!this.useRealDb) {
+      return mockQuestions
+        .filter((question) => question.topicId === topicId && question.isActive)
+        .map((question) => ({
+          ...question,
+          _source: 'mock',
+          options: mockQuestionOptions
+            .filter((option) => option.questionId === question.id)
+            .map((option) => withSource(option, 'mock'))
+            .sort((first, second) => first.sortOrder - second.sortOrder),
+        }))
+    }
+
+    const { data, error } = await this.client
+      .from('questions')
+      .select('*, question_options ( id, question_id, option_text, is_correct, sort_order, created_at )')
+      .eq('topic_id', topicId)
+      .eq('is_active', true)
+
+    if (error) {
+      throw new AppError('Failed to fetch topic question bank', 500, error.message)
+    }
+
+    const questions = (Array.isArray(data) ? data : []).map((row) => {
+      const record = ensureRecord(row)
+      const options = Array.isArray(record.question_options) ? record.question_options : []
+
+      return {
+        ...mapQuestion(record),
+        options: options.map((option) => mapQuestionOption(ensureRecord(option))),
+      }
+    })
+
+    return questions
+  }
+
+  public async listQuestionsByTopicAndTypeCodes(
+    topicId: string,
+    questionTypeCodes: string[],
+  ): Promise<QuestionWithOptions[]> {
+    if (questionTypeCodes.length === 0) {
+      return []
+    }
+
+    if (!this.useRealDb) {
+      const allowedTypeIds = new Set(
+        mockQuestionTypes
+          .filter((questionType) => questionTypeCodes.includes(questionType.code))
+          .map((questionType) => questionType.id),
+      )
+
+      return mockQuestions
+        .filter(
+          (question) =>
+            question.topicId === topicId &&
+            question.isActive &&
+            allowedTypeIds.has(question.questionTypeId),
+        )
+        .map((question) => ({
+          ...question,
+          _source: 'mock',
+          options: mockQuestionOptions
+            .filter((option) => option.questionId === question.id)
+            .map((option) => withSource(option, 'mock'))
+            .sort((first, second) => first.sortOrder - second.sortOrder),
+        }))
+    }
+
+    const { data, error } = await this.client
+      .from('questions')
+      .select(
+        '*, question_types!inner ( id, code, name, description, created_at ), question_options ( id, question_id, option_text, is_correct, sort_order, created_at )',
+      )
+      .eq('topic_id', topicId)
+      .eq('is_active', true)
+      .in('question_types.code', questionTypeCodes)
+
+    if (error) {
+      throw new AppError('Failed to fetch topic question bank by type', 500, error.message)
+    }
+
+    return (Array.isArray(data) ? data : []).map((row) => {
+      const record = ensureRecord(row)
+      const options = Array.isArray(record.question_options) ? record.question_options : []
+
+      return {
+        ...mapQuestion(record),
+        options: options
+          .map((option) => mapQuestionOption(ensureRecord(option)))
+          .sort((first, second) => first.sortOrder - second.sortOrder),
+      }
+    })
   }
 
   public async saveQuestionsWithOptions(inputs: GeneratedQuestionInput[]): Promise<QuestionWithOptions[]> {
@@ -1036,6 +1268,347 @@ export class StudentRepository {
     }
 
     return (Array.isArray(data) ? data : []).map((row) => mapExamQuestion(ensureRecord(row)))
+  }
+
+  public async listGeneratedExamsForSubject(
+    studentId: string,
+    subjectId: string,
+  ): Promise<GeneratedExamWithTopic[]> {
+    if (!this.useRealDb) {
+      return mockGeneratedExams
+        .filter((exam) => {
+          const topic = mockTopics.find((item) => item.id === exam.targetTopicId)
+
+          return exam.studentId === studentId && topic?.subjectId === subjectId
+        })
+        .sort((firstExam, secondExam) => secondExam.createdAt.localeCompare(firstExam.createdAt))
+        .map((exam) => {
+          const topic = mockTopics.find((item) => item.id === exam.targetTopicId)
+
+          return {
+            ...withSource(exam, 'mock'),
+            subjectId: topic?.subjectId ?? null,
+            topicName: topic?.name ?? null,
+            questionCount: mockExamQuestions.filter((question) => question.examId === exam.id).length,
+          }
+        })
+    }
+
+    const { data, error } = await this.client
+      .from('generated_exams')
+      .select('*, topics!inner ( id, subject_id, name )')
+      .eq('student_id', studentId)
+      .eq('topics.subject_id', subjectId)
+      .order('created_at', { ascending: false })
+
+    if (error) {
+      throw new AppError('Failed to fetch generated exams', 500, error.message)
+    }
+
+    const exams = (Array.isArray(data) ? data : []).map((row) => {
+      const record = ensureRecord(row)
+      const topic = ensureRecord(record.topics)
+
+      return {
+        ...mapGeneratedExam(record),
+        subjectId: nullableString(topic.subject_id),
+        topicName: nullableString(topic.name),
+        questionCount: 0,
+      }
+    })
+
+    if (exams.length === 0) {
+      return []
+    }
+
+    const examIds = exams.map((exam) => exam.id)
+    const { data: examQuestionData, error: examQuestionError } = await this.client
+      .from('exam_questions')
+      .select('exam_id')
+      .in('exam_id', examIds)
+
+    if (examQuestionError) {
+      throw new AppError('Failed to fetch exam question counts', 500, examQuestionError.message)
+    }
+
+    const questionCounts = new Map<string, number>()
+
+    for (const row of Array.isArray(examQuestionData) ? examQuestionData : []) {
+      const record = ensureRecord(row)
+      const examId = String(record.exam_id ?? '')
+
+      questionCounts.set(examId, (questionCounts.get(examId) ?? 0) + 1)
+    }
+
+    return exams.map((exam) => ({
+      ...exam,
+      questionCount: questionCounts.get(exam.id) ?? 0,
+    }))
+  }
+
+  public async findGeneratedExamPractice(examId: string): Promise<GeneratedExamPractice | null> {
+    if (!this.useRealDb) {
+      const exam = mockGeneratedExams.find((item) => item.id === examId)
+
+      if (!exam) {
+        return null
+      }
+
+      const examQuestions = mockExamQuestions
+        .filter((examQuestion) => examQuestion.examId === examId)
+        .sort((first, second) => first.sortOrder - second.sortOrder)
+        .map((examQuestion): ExamQuestionWithQuestion | null => {
+          const question = mockQuestions.find((item) => item.id === examQuestion.questionId)
+          const questionType = question
+            ? mockQuestionTypes.find((item) => item.id === question.questionTypeId)
+            : null
+
+          if (!question || !questionType) {
+            return null
+          }
+
+          return {
+            ...withSource(examQuestion, 'mock'),
+            question: {
+              ...withSource(question, 'mock'),
+              questionType: withSource(questionType, 'mock'),
+              options: mockQuestionOptions
+                .filter((option) => option.questionId === question.id)
+                .map((option) => withSource(option, 'mock'))
+                .sort((first, second) => first.sortOrder - second.sortOrder),
+            },
+          }
+        })
+        .filter((examQuestion): examQuestion is ExamQuestionWithQuestion => Boolean(examQuestion))
+
+      return {
+        exam: withSource(exam, 'mock'),
+        examQuestions,
+      }
+    }
+
+    const { data: examData, error: examError } = await this.client
+      .from('generated_exams')
+      .select('*')
+      .eq('id', examId)
+      .maybeSingle()
+
+    if (examError) {
+      throw new AppError('Failed to fetch generated exam', 500, examError.message)
+    }
+
+    if (!examData) {
+      return null
+    }
+
+    const exam = mapGeneratedExam(ensureRecord(examData))
+    const { data: examQuestionData, error: examQuestionError } = await this.client
+      .from('exam_questions')
+      .select(
+        `
+        *,
+        questions (
+          *,
+          question_types (*),
+          question_options (*)
+        )
+      `,
+      )
+      .eq('exam_id', examId)
+      .order('sort_order', { ascending: true })
+
+    if (examQuestionError) {
+      throw new AppError('Failed to fetch exam questions', 500, examQuestionError.message)
+    }
+
+    const examQuestions = (Array.isArray(examQuestionData) ? examQuestionData : []).map((row) => {
+      const record = ensureRecord(row)
+      const questionRecord = ensureRecord(record.questions)
+      const questionTypeRecord = ensureRecord(questionRecord.question_types)
+      const options = Array.isArray(questionRecord.question_options)
+        ? questionRecord.question_options
+        : []
+
+      return {
+        ...mapExamQuestion(record),
+        question: {
+          ...mapQuestion(questionRecord),
+          questionType: mapQuestionType(questionTypeRecord),
+          options: options
+            .map((option) => mapQuestionOption(ensureRecord(option)))
+            .sort((first, second) => first.sortOrder - second.sortOrder),
+        },
+      }
+    })
+
+    return {
+      exam,
+      examQuestions,
+    }
+  }
+
+  public async insertStudentAnswers(inputs: StudentAnswerInput[]): Promise<StudentAnswer[]> {
+    if (inputs.length === 0) {
+      return []
+    }
+
+    if (!this.useRealDb) {
+      const now = new Date().toISOString()
+      const rows = inputs.map((input, index): StudentAnswer => ({
+        _source: 'mock',
+        id: `student-answer-${input.examQuestionId}-${Date.now()}-${index}`,
+        examQuestionId: input.examQuestionId,
+        studentId: input.studentId,
+        answerText: input.answerText,
+        selectedOptionId: input.selectedOptionId,
+        isCorrect: input.isCorrect,
+        score: input.score,
+        answeredAt: input.answeredAt,
+        createdAt: now,
+      }))
+
+      mockStudentAnswers.push(...rows)
+
+      return rows
+    }
+
+    const { data, error } = await this.client
+      .from('student_answers')
+      .insert(
+        inputs.map((input) => ({
+          exam_question_id: input.examQuestionId,
+          student_id: input.studentId,
+          selected_option_id: input.selectedOptionId,
+          answer_text: input.answerText,
+          is_correct: input.isCorrect,
+          score: input.score,
+          answered_at: input.answeredAt,
+        })),
+      )
+      .select('*')
+
+    if (error) {
+      throw new AppError('Failed to save student answers', 500, error.message)
+    }
+
+    return (Array.isArray(data) ? data : []).map((row) => {
+      const record = ensureRecord(row)
+
+      return {
+        _source: 'database' as const,
+        id: String(record.id),
+        examQuestionId: String(record.exam_question_id ?? ''),
+        studentId: String(record.student_id ?? ''),
+        answerText: nullableString(record.answer_text),
+        selectedOptionId: nullableString(record.selected_option_id),
+        isCorrect:
+          record.is_correct === null || record.is_correct === undefined
+            ? null
+            : Boolean(record.is_correct),
+        score: record.score === null || record.score === undefined ? null : Number(record.score),
+        answeredAt: String(record.answered_at ?? ''),
+        createdAt: String(record.created_at ?? ''),
+      }
+    })
+  }
+
+  public async deleteStudentAnswersForExam(examId: string): Promise<number> {
+    const examQuestionIds = await this.listExamQuestionIds(examId)
+
+    if (examQuestionIds.length === 0) {
+      return 0
+    }
+
+    if (!this.useRealDb) {
+      const initialCount = mockStudentAnswers.length
+
+      for (let index = mockStudentAnswers.length - 1; index >= 0; index -= 1) {
+        if (examQuestionIds.includes(mockStudentAnswers[index]?.examQuestionId ?? '')) {
+          mockStudentAnswers.splice(index, 1)
+        }
+      }
+
+      return initialCount - mockStudentAnswers.length
+    }
+
+    const { error } = await this.client
+      .from('student_answers')
+      .delete()
+      .in('exam_question_id', examQuestionIds)
+
+    if (error) {
+      throw new AppError('Failed to delete student answers for exam', 500, error.message)
+    }
+
+    return examQuestionIds.length
+  }
+
+  public async deleteExamQuestionsForExam(examId: string): Promise<number> {
+    const examQuestionIds = await this.listExamQuestionIds(examId)
+
+    if (!this.useRealDb) {
+      const initialCount = mockExamQuestions.length
+
+      for (let index = mockExamQuestions.length - 1; index >= 0; index -= 1) {
+        if (mockExamQuestions[index]?.examId === examId) {
+          mockExamQuestions.splice(index, 1)
+        }
+      }
+
+      return initialCount - mockExamQuestions.length
+    }
+
+    const { error } = await this.client.from('exam_questions').delete().eq('exam_id', examId)
+
+    if (error) {
+      throw new AppError('Failed to delete exam questions', 500, error.message)
+    }
+
+    return examQuestionIds.length
+  }
+
+  public async deleteGeneratedExam(examId: string): Promise<number> {
+    if (!this.useRealDb) {
+      const index = mockGeneratedExams.findIndex((exam) => exam.id === examId)
+
+      if (index === -1) {
+        return 0
+      }
+
+      mockGeneratedExams.splice(index, 1)
+      return 1
+    }
+
+    const { data, error } = await this.client
+      .from('generated_exams')
+      .delete()
+      .eq('id', examId)
+      .select('id')
+
+    if (error) {
+      throw new AppError('Failed to delete generated exam', 500, error.message)
+    }
+
+    return Array.isArray(data) ? data.length : 0
+  }
+
+  private async listExamQuestionIds(examId: string): Promise<string[]> {
+    if (!this.useRealDb) {
+      return mockExamQuestions
+        .filter((examQuestion) => examQuestion.examId === examId)
+        .map((examQuestion) => examQuestion.id)
+    }
+
+    const { data, error } = await this.client
+      .from('exam_questions')
+      .select('id')
+      .eq('exam_id', examId)
+
+    if (error) {
+      throw new AppError('Failed to fetch exam question ids', 500, error.message)
+    }
+
+    return (Array.isArray(data) ? data : []).map((row) => String(ensureRecord(row).id ?? ''))
   }
 
   public async updateParentActionStatus(input: {

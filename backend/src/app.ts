@@ -1,6 +1,7 @@
 import cors from 'cors'
 import express from 'express'
 import { authRoutes } from './routes/authRoutes.js'
+import { examRoutes } from './routes/examRoutes.js'
 import { lessonRoutes } from './routes/lessonRoutes.js'
 import { studentRoutes } from './routes/studentRoutes.js'
 import { errorHandler } from './middleware/errorHandler.js'
@@ -24,6 +25,7 @@ export const createApp = () => {
 
   app.use('/api/auth', authRoutes)
   app.use('/api/students', studentRoutes)
+  app.use('/api/exams', examRoutes)
   app.use('/api', lessonRoutes)
 
   app.use(notFoundHandler)

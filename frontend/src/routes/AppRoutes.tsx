@@ -1,6 +1,7 @@
 import { Navigate, Route, Routes, useParams } from 'react-router-dom'
 import { useAtomValue } from 'jotai'
 import { ChildSelectionScreen } from '../components/ChildSelectionScreen'
+import { ExamPractice } from '../components/ExamPractice'
 import { HomeScreen } from '../components/HomeScreen'
 import { LoginScreen } from '../components/LoginScreen'
 import { PracticePlaceholder } from '../components/PracticePlaceholder'
@@ -33,6 +34,7 @@ export const AppRoutes = () => {
         <Route path="/home" element={<HomeScreen />} />
         <Route path="/profile" element={<ProfilePlaceholder />} />
         <Route path="/subject/:subjectId" element={<SubjectDetailRoute />} />
+        <Route path="/exams/:examId/practice" element={<ExamPractice />} />
         <Route path="/practice/:topicId" element={<PracticePlaceholder />} />
       </Route>
       <Route

@@ -13,18 +13,25 @@ export const PracticePlaceholder = () => {
   const activeStudentId = useAtomValue(activeStudentIdAtom)
   const navigate = useNavigate()
   const [lesson, setLesson] = useState<GeneratedLessonResponse | null>(null)
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   useEffect(() => {
     let isMounted = true
 
     const loadLesson = async () => {
-      const generatedLesson = await api.practice.generateLesson(
-        activeStudentId,
-        topicId ?? 'topic',
-      )
+      setLesson(null)
+      setErrorMessage(null)
 
-      if (isMounted) {
-        setLesson(generatedLesson)
+      try {
+        const generatedLesson = await api.practice.generateLesson(activeStudentId, topicId ?? 'topic')
+
+        if (isMounted) {
+          setLesson(generatedLesson)
+        }
+      } catch {
+        if (isMounted) {
+          setErrorMessage('לא הצלחנו ליצור תרגול כרגע. נסו שוב מאוחר יותר.')
+        }
       }
     }
 
@@ -49,7 +56,11 @@ export const PracticePlaceholder = () => {
 
         <section className="rounded-3xl border border-white/20 bg-white/70 p-6 text-start shadow-[0_18px_55px_rgba(15,23,42,0.10)] backdrop-blur-md">
           <h1 className="text-2xl font-black text-slate-950">תרגול קצר</h1>
-          {!lesson ? (
+          {errorMessage ? (
+            <div className="mt-8 rounded-2xl bg-red-50 p-4 text-sm font-black text-red-700">
+              {errorMessage}
+            </div>
+          ) : !lesson ? (
             <div className="mt-8 flex items-center gap-3 text-sm font-black text-[#1A6B5A]">
               <Loader2 className="size-5 animate-spin" aria-hidden="true" />
               יוצר תרגול מותאם...

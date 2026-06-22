@@ -1,0 +1,14 @@
+schools: 2 rows
+teachers: 14 rows
+classes: 4 rows
+students: 24 rows
+parents: 48 rows
+student_parents: 48 rows
+subjects: 12 rows
+topics: 36 rows
+grades: 216 rows
+attendance: 216 rows
+student_ai_analysis: 24 rows
+ai_analysis_topics: 72 rows
+recommendations: 34 rows
+parent_actions: 9 rows

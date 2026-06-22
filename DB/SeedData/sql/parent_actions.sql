@@ -1,0 +1,21 @@
+-- Generated fake data for parent_actions. Regenerate with generate_fake_data.py.
+INSERT INTO parent_actions (id, student_id, parent_id, recommendation_id, action_type, status, completed_at, parent_feedback, created_at)
+VALUES
+    ('4121c944-46bd-5f0c-bff2-fa9f53ed9a7b', '1c08777d-ea13-55ff-b64e-2d2bb2ef4fda', '96bf2ccd-5279-5551-97f2-d25da96fa1e6', 'ec06d603-cd45-5d0a-946c-69699fe14fc7', 'practiced_at_home', 'completed', '2026-06-25T12:00:00+00:00', 'Completed a short practice session at home.', '2026-06-24T12:00:00+00:00'),
+    ('0bf2c1d7-d583-5d4e-aed3-3896b3d05355', '70939d89-d902-513c-87d8-10540dadcf88', '1e8effc4-738c-5d2b-9d83-363d6e1f1c54', 'a3cb0768-664b-53cb-b721-6d40c1f8b797', 'practiced_at_home', 'completed', '2026-06-25T12:00:00+00:00', 'Completed a short practice session at home.', '2026-06-24T12:00:00+00:00'),
+    ('214eaef3-e5fb-5cf7-bec6-6e38029518c9', '2cc53407-b1da-5b5f-bb14-77fdc418cc59', 'a9a6af39-a02c-5e13-948e-fdf57d89c169', '13e0aa3b-0ff1-5458-a620-d12c4859b44b', 'dismissed', 'dismissed', NULL, 'Parent dismissed this recommendation.', '2026-06-24T12:00:00+00:00'),
+    ('b1df15a2-c2a5-51ff-94c1-9b4d263c3378', '16797408-f16f-5c38-8a42-16c5a222b739', '0541526d-b591-5dd0-99e2-d40d0a052ae8', 'ea0aea64-0ce4-556b-9d53-a9d62696c274', 'dismissed', 'dismissed', NULL, 'Parent dismissed this recommendation.', '2026-06-24T12:00:00+00:00'),
+    ('401385b3-e0f4-506a-854e-0e88ecded537', '19d3112c-1827-56db-878c-f2a5ab109fef', '9a36579b-7013-5d30-8470-5d5a108c48d9', '7496db9f-9a30-5457-ba0d-a0003ab036d6', 'practiced_at_home', 'completed', '2026-06-25T12:00:00+00:00', 'Completed a short practice session at home.', '2026-06-24T12:00:00+00:00'),
+    ('7856d3cf-aa50-568e-beda-e87541bb29ac', '9742c1bd-f947-595c-8a76-6d2d6bb4f8ae', '1dfcbb92-28fd-585f-9da0-4b1835be6f9e', '2f90247c-27df-588c-b0ad-76bcc604d9c7', 'dismissed', 'dismissed', NULL, 'Parent dismissed this recommendation.', '2026-06-24T12:00:00+00:00'),
+    ('d06d7a69-a3c5-5b97-96fe-a90191bae9a3', '93a5c18f-9a69-56ce-bdf0-11b05275cb5b', '37dec341-9060-5481-ba0a-6844859fd3a2', '4d7c609f-8307-5f54-9bcc-b41fd8566030', 'dismissed', 'dismissed', NULL, 'Parent dismissed this recommendation.', '2026-06-24T12:00:00+00:00'),
+    ('b856afd5-c98d-585e-a8c4-037139ce418f', 'e2e7b829-fe3b-5e74-ad87-ea812f8c5679', '1948f4e3-385f-5c8d-b700-e030a26959f6', '509d8bec-e879-562f-b9bf-28645285e616', 'practiced_at_home', 'completed', '2026-06-25T12:00:00+00:00', 'Completed a short practice session at home.', '2026-06-24T12:00:00+00:00'),
+    ('b4e7ce4c-ba99-5004-911c-a3d59eb3cfcb', 'a387b82e-831a-5dfb-b759-3aab1d31f5aa', '4a57cedb-cb7d-5038-971d-11b5591eefcc', 'f22b7fc3-979e-5798-b2bb-fe1a8790d2cc', 'practiced_at_home', 'completed', '2026-06-25T12:00:00+00:00', 'Completed a short practice session at home.', '2026-06-24T12:00:00+00:00')
+ON CONFLICT (id) DO UPDATE SET
+    student_id = EXCLUDED.student_id,
+    parent_id = EXCLUDED.parent_id,
+    recommendation_id = EXCLUDED.recommendation_id,
+    action_type = EXCLUDED.action_type,
+    status = EXCLUDED.status,
+    completed_at = EXCLUDED.completed_at,
+    parent_feedback = EXCLUDED.parent_feedback,
+    created_at = EXCLUDED.created_at;

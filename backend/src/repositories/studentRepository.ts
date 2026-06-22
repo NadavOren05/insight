@@ -1039,6 +1039,64 @@ export class StudentRepository {
     return questions
   }
 
+  public async listQuestionsByTopicAndTypeCodes(
+    topicId: string,
+    questionTypeCodes: string[],
+  ): Promise<QuestionWithOptions[]> {
+    if (questionTypeCodes.length === 0) {
+      return []
+    }
+
+    if (!this.useRealDb) {
+      const allowedTypeIds = new Set(
+        mockQuestionTypes
+          .filter((questionType) => questionTypeCodes.includes(questionType.code))
+          .map((questionType) => questionType.id),
+      )
+
+      return mockQuestions
+        .filter(
+          (question) =>
+            question.topicId === topicId &&
+            question.isActive &&
+            allowedTypeIds.has(question.questionTypeId),
+        )
+        .map((question) => ({
+          ...question,
+          _source: 'mock',
+          options: mockQuestionOptions
+            .filter((option) => option.questionId === question.id)
+            .map((option) => withSource(option, 'mock'))
+            .sort((first, second) => first.sortOrder - second.sortOrder),
+        }))
+    }
+
+    const { data, error } = await this.client
+      .from('questions')
+      .select(
+        '*, question_types!inner ( id, code, name, description, created_at ), question_options ( id, question_id, option_text, is_correct, sort_order, created_at )',
+      )
+      .eq('topic_id', topicId)
+      .eq('is_active', true)
+      .in('question_types.code', questionTypeCodes)
+
+    if (error) {
+      throw new AppError('Failed to fetch topic question bank by type', 500, error.message)
+    }
+
+    return (Array.isArray(data) ? data : []).map((row) => {
+      const record = ensureRecord(row)
+      const options = Array.isArray(record.question_options) ? record.question_options : []
+
+      return {
+        ...mapQuestion(record),
+        options: options
+          .map((option) => mapQuestionOption(ensureRecord(option)))
+          .sort((first, second) => first.sortOrder - second.sortOrder),
+      }
+    })
+  }
+
   public async saveQuestionsWithOptions(inputs: GeneratedQuestionInput[]): Promise<QuestionWithOptions[]> {
     if (inputs.length === 0) {
       return []

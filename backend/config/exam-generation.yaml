@@ -1,0 +1,33 @@
+# Exam generation configuration.
+#
+# question_types:
+#   Only questions whose question_types.code appears here can be selected.
+#   Keep this as ["mcq"] while the practice UI supports MCQ only.
+#
+# number_of_questions:
+#   Maximum number of questions to attach to a generated exam.
+#
+# allow_fewer_questions:
+#   true  -> create an exam with fewer questions if the bank has at least one valid question.
+#   false -> fail creation unless the bank has number_of_questions valid questions.
+#
+# shuffle_questions:
+#   true  -> randomize selected questions.
+#   false -> use stable question-bank order.
+#
+# prefer_recommendations:
+#   true  -> choose the practice topic from pending recommendations first.
+#   false -> skip recommendations and choose by grades.
+#
+# fallback_to_lowest_grade:
+#   true  -> choose the lowest-grade topic when no recommendation topic is found.
+#   false -> fail if no recommendation topic is found.
+
+question_types:
+  - mcq
+
+number_of_questions: 3
+allow_fewer_questions: true
+shuffle_questions: true
+prefer_recommendations: true
+fallback_to_lowest_grade: true

@@ -1,5 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk'
 import { z } from 'zod'
+import { loadExamGenerationConfig } from '../config/examGenerationConfig.js'
 import { env } from '../lib/env.js'
 import { AppError } from '../middleware/appError.js'
 import {
@@ -277,6 +278,13 @@ export class QuestionService {
       subjectId: input.subjectId,
       usingRealDb: this.repository.isUsingRealDb(),
     })
+    const generationConfig = loadExamGenerationConfig()
+
+    logExamGeneration('config-loaded', {
+      studentId: input.studentId,
+      subjectId: input.subjectId,
+      config: generationConfig,
+    })
 
     const [student, subject] = await Promise.all([
       this.repository.findStudentById(input.studentId),
@@ -291,7 +299,11 @@ export class QuestionService {
       throw new AppError('Subject was not found', 404)
     }
 
-    const selection = await this.selectPracticeTopic(input.studentId, input.subjectId)
+    const selection = await this.selectPracticeTopic(
+      input.studentId,
+      input.subjectId,
+      generationConfig,
+    )
 
     if (!selection) {
       throw new AppError('No topic with enough learning data was found for this subject', 404)
@@ -325,13 +337,17 @@ export class QuestionService {
       throw new AppError('Cannot create a real exam from mock topic data', 409)
     }
 
-    const questionBank = await this.repository.listQuestionsByTopic(selection.topicId)
+    const questionBank = await this.repository.listQuestionsByTopicAndTypeCodes(
+      selection.topicId,
+      generationConfig.questionTypes,
+    )
 
     logExamGeneration('question-bank-loaded', {
       studentId: input.studentId,
       subjectId: input.subjectId,
       topicId: topic.id,
       topicName: topic.name,
+      allowedQuestionTypes: generationConfig.questionTypes,
       availableQuestionCount: questionBank.length,
       availableQuestionIds: questionBank.map((question) => question.id),
     })
@@ -342,24 +358,45 @@ export class QuestionService {
         subjectId: input.subjectId,
         topicId: topic.id,
         topicName: topic.name,
-        message: 'No active questions were found for selected topic. Exam was not created.',
+        allowedQuestionTypes: generationConfig.questionTypes,
+        message: 'No active questions with allowed question types were found for selected topic. Exam was not created.',
       })
 
       throw new AppError('לא נמצאו שאלות פעילות במאגר עבור הנושא שנבחר.', 404)
     }
 
-    const selectedQuestions = shuffleQuestions(questionBank).slice(0, MIN_QUESTION_COUNT)
+    if (!generationConfig.allowFewerQuestions && questionBank.length < generationConfig.numberOfQuestions) {
+      logExamGeneration('question-bank-insufficient-blocked', {
+        studentId: input.studentId,
+        subjectId: input.subjectId,
+        topicId: topic.id,
+        availableQuestionCount: questionBank.length,
+        requiredQuestionCount: generationConfig.numberOfQuestions,
+        allowedQuestionTypes: generationConfig.questionTypes,
+      })
+
+      throw new AppError('אין מספיק שאלות במאגר כדי ליצור את התרגול המבוקש.', 409)
+    }
+
+    const orderedQuestionBank = generationConfig.shuffleQuestions
+      ? shuffleQuestions(questionBank)
+      : questionBank
+    const selectedQuestions = orderedQuestionBank.slice(0, generationConfig.numberOfQuestions)
     const mismatchedQuestions = selectedQuestions.filter((question) => question.topicId !== topic.id)
 
     logExamGeneration('random-questions-selected', {
       studentId: input.studentId,
       subjectId: input.subjectId,
       topicId: topic.id,
-      requestedQuestionCount: MIN_QUESTION_COUNT,
+      requestedQuestionCount: generationConfig.numberOfQuestions,
       selectedQuestionCount: selectedQuestions.length,
+      shuffleQuestions: generationConfig.shuffleQuestions,
+      allowFewerQuestions: generationConfig.allowFewerQuestions,
+      allowedQuestionTypes: generationConfig.questionTypes,
       selectedQuestions: selectedQuestions.map((question) => ({
         id: question.id,
         topicId: question.topicId,
+        questionTypeId: question.questionTypeId,
       })),
     })
 
@@ -385,8 +422,8 @@ export class QuestionService {
       title: `תרגול קצר: ${topic.name}`,
       generationReason:
         selection.selectionSource === 'recommendation'
-          ? 'Selected from latest practice recommendation'
-          : 'Selected from lowest average grade',
+          ? `Selected from latest practice recommendation; config question types: ${generationConfig.questionTypes.join(', ')}; question count: ${selectedQuestions.length}`
+          : `Selected from lowest average grade; config question types: ${generationConfig.questionTypes.join(', ')}; question count: ${selectedQuestions.length}`,
     })
 
     logExamGeneration('generated-exam-row-created', {
@@ -699,16 +736,21 @@ export class QuestionService {
   private async selectPracticeTopic(
     studentId: string,
     subjectId: string,
+    generationConfig: ReturnType<typeof loadExamGenerationConfig>,
   ): Promise<PracticeTopicSelection | null> {
     const topics = await this.repository.listTopicsForSubject(subjectId)
     const subjectTopicIds = new Set(topics.map((topic) => topic.id))
-    const recommendations = await this.repository.listPendingPracticeRecommendations(studentId)
+    const recommendations = generationConfig.preferRecommendations
+      ? await this.repository.listPendingPracticeRecommendations(studentId)
+      : []
 
     logExamGeneration('topic-selection-inputs', {
       studentId,
       subjectId,
       subjectTopicCount: topics.length,
       subjectTopicIds: Array.from(subjectTopicIds),
+      preferRecommendations: generationConfig.preferRecommendations,
+      fallbackToLowestGrade: generationConfig.fallbackToLowestGrade,
       pendingPracticeRecommendationCount: recommendations.length,
       pendingPracticeRecommendationIds: recommendations.map((recommendation) => recommendation.id),
     })
@@ -741,6 +783,16 @@ export class QuestionService {
           recommendationId: recommendation.id,
         }
       }
+    }
+
+    if (!generationConfig.fallbackToLowestGrade) {
+      logExamGeneration('topic-selection-no-fallback', {
+        studentId,
+        subjectId,
+        message: 'No recommendation topic found and lowest-grade fallback is disabled by config.',
+      })
+
+      return null
     }
 
     const grades = await this.repository.listGradesForSubject(studentId, subjectId)

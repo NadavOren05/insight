@@ -1,5 +1,9 @@
 import type {
   CreatedPracticeExamResponse,
+  ExamFinishResult,
+  ExamPracticeResponse,
+  ExamRetryResult,
+  ExamSubmissionResult,
   GeneratedLessonResponse,
   LoginResponse,
   OverviewResponse,
@@ -128,6 +132,29 @@ const generateSubjectPractice = async (
     method: 'POST',
   })
 
+const getExamPractice = async (examId: string): Promise<ExamPracticeResponse> =>
+  request<ExamPracticeResponse>(`/exams/${examId}/practice`)
+
+const submitExam = async (
+  examId: string,
+  studentId: string,
+  answers: Array<{ examQuestionId: string; selectedOptionId: string }>,
+): Promise<ExamSubmissionResult> =>
+  request<ExamSubmissionResult>(`/exams/${examId}/submit`, {
+    method: 'POST',
+    body: JSON.stringify({ studentId, answers }),
+  })
+
+const retryExam = async (examId: string): Promise<ExamRetryResult> =>
+  request<ExamRetryResult>(`/exams/${examId}/retry`, {
+    method: 'POST',
+  })
+
+const finishExam = async (examId: string): Promise<ExamFinishResult> =>
+  request<ExamFinishResult>(`/exams/${examId}`, {
+    method: 'DELETE',
+  })
+
 export const api = {
   auth: {
     login,
@@ -140,5 +167,9 @@ export const api = {
   practice: {
     generateLesson,
     generateSubjectPractice,
+    getExamPractice,
+    submitExam,
+    retryExam,
+    finishExam,
   },
 }

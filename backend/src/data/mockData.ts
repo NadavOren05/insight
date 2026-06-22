@@ -238,7 +238,7 @@ export const mockDifficultyLevels: QuestionDifficultyLevel[] = [
 ]
 
 export const mockQuestionTypes: QuestionType[] = [
-  { id: 'question-type-multiple-choice', code: 'multiple_choice', name: 'אמריקאית', description: null, createdAt: now },
+  { id: 'question-type-multiple-choice', code: 'mcq', name: 'אמריקאית', description: null, createdAt: now },
 ]
 
 const fractionQuestionTexts = [

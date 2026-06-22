@@ -2,9 +2,18 @@ import Anthropic from '@anthropic-ai/sdk'
 import { z } from 'zod'
 import { env } from '../lib/env.js'
 import { AppError } from '../middleware/appError.js'
-import { studentRepository, type StudentRepository } from '../repositories/studentRepository.js'
+import {
+  studentRepository,
+  type ExamQuestionWithQuestion,
+  type StudentRepository,
+} from '../repositories/studentRepository.js'
 import type {
   CreatedPracticeExamResponse,
+  ExamFinishResult,
+  ExamPracticeResponse,
+  ExamRetryResult,
+  ExamSubmissionAnswerInput,
+  ExamSubmissionResult,
   GeneratedLessonResponse,
   PracticeQuestion,
   SubjectExamSummary,
@@ -33,6 +42,8 @@ interface PracticeTopicSelection {
 }
 
 const MIN_QUESTION_COUNT = 5
+const SUPPORTED_PRACTICE_QUESTION_TYPE = 'mcq'
+const UNSUPPORTED_EXAM_MESSAGE = 'המבחן מכיל שאלות שאינם מסוג רב בחירתי אשר לא נתמכות בגרסה זו של המערכת'
 const WEAK_ANALYSIS_TYPES = new Set(['weak', 'gap', 'missed', 'attendance_correlation'])
 
 const generatedQuestionSchema = z.object({
@@ -114,6 +125,10 @@ const logExamList = (event: string, details: Record<string, unknown>): void => {
   console.info(`[exam-list] ${event}`, JSON.stringify(details))
 }
 
+const logExamPractice = (event: string, details: Record<string, unknown>): void => {
+  console.info(`[exam-practice] ${event}`, JSON.stringify(details))
+}
+
 const shuffleQuestions = (questions: QuestionWithOptions[]): QuestionWithOptions[] =>
   [...questions].sort(() => Math.random() - 0.5)
 
@@ -149,7 +164,7 @@ export class QuestionService {
       throw new AppError('Topic was not found', 404)
     }
 
-    const questionType = await this.repository.findQuestionTypeByCode('multiple_choice')
+    const questionType = await this.repository.findQuestionTypeByCode(SUPPORTED_PRACTICE_QUESTION_TYPE)
 
     if (!questionType) {
       throw new AppError('Question type was not found', 404)
@@ -486,6 +501,199 @@ export class QuestionService {
       createdAt: exam.createdAt,
       completedAt: exam.completedAt,
     }))
+  }
+
+  public async getExamPractice(examId: string): Promise<ExamPracticeResponse> {
+    logExamPractice('fetch-start', { examId, usingRealDb: this.repository.isUsingRealDb() })
+
+    const practice = await this.repository.findGeneratedExamPractice(examId)
+
+    if (!practice) {
+      throw new AppError('Exam was not found', 404)
+    }
+
+    logExamPractice('fetch-complete', {
+      examId,
+      studentId: practice.exam.studentId,
+      questionCount: practice.examQuestions.length,
+      questionTypes: practice.examQuestions.map((examQuestion) => examQuestion.question.questionType.code),
+    })
+
+    return {
+      _source: practice.exam._source ?? 'mock',
+      id: practice.exam.id,
+      studentId: practice.exam.studentId,
+      title: practice.exam.title,
+      status: practice.exam.status,
+      targetTopicId: practice.exam.targetTopicId,
+      questions: practice.examQuestions.map((examQuestion) => ({
+        _source: examQuestion._source ?? practice.exam._source ?? 'mock',
+        examQuestionId: examQuestion.id,
+        questionId: examQuestion.question.id,
+        questionText: examQuestion.question.questionText,
+        questionTypeCode: examQuestion.question.questionType.code,
+        points: examQuestion.points,
+        sortOrder: examQuestion.sortOrder,
+        options: examQuestion.question.options.map((option) => ({
+          _source: option._source ?? examQuestion.question._source ?? 'mock',
+          id: option.id,
+          optionText: option.optionText,
+          sortOrder: option.sortOrder,
+        })),
+      })),
+    }
+  }
+
+  public async submitExam(input: {
+    examId: string
+    studentId: string
+    answers: ExamSubmissionAnswerInput[]
+  }): Promise<ExamSubmissionResult> {
+    logExamPractice('submit-start', {
+      examId: input.examId,
+      studentId: input.studentId,
+      submittedAnswerCount: input.answers.length,
+    })
+
+    const practice = await this.repository.findGeneratedExamPractice(input.examId)
+
+    if (!practice) {
+      throw new AppError('Exam was not found', 404)
+    }
+
+    if (practice.exam.studentId !== input.studentId) {
+      throw new AppError('Exam does not belong to this student', 403)
+    }
+
+    this.assertPracticeSupportsOnlyMcq(practice.exam.id, practice.examQuestions)
+
+    if (input.answers.length !== practice.examQuestions.length) {
+      throw new AppError('All questions must be answered before submitting', 400)
+    }
+
+    const answerByExamQuestionId = new Map(
+      input.answers.map((answer) => [answer.examQuestionId, answer.selectedOptionId]),
+    )
+    const answeredAt = new Date().toISOString()
+    let correctCount = 0
+
+    const answerRows = practice.examQuestions.map((examQuestion) => {
+      const selectedOptionId = answerByExamQuestionId.get(examQuestion.id)
+
+      if (!selectedOptionId) {
+        throw new AppError('All questions must be answered before submitting', 400)
+      }
+
+      const selectedOption = examQuestion.question.options.find((option) => option.id === selectedOptionId)
+
+      if (!selectedOption) {
+        throw new AppError('Selected option does not belong to the exam question', 400)
+      }
+
+      if (selectedOption.isCorrect) {
+        correctCount += 1
+      }
+
+      return {
+        examQuestionId: examQuestion.id,
+        studentId: input.studentId,
+        selectedOptionId: selectedOption.id,
+        answerText: selectedOption.optionText,
+        isCorrect: selectedOption.isCorrect,
+        score: selectedOption.isCorrect ? examQuestion.points : 0,
+        answeredAt,
+      }
+    })
+
+    await this.repository.insertStudentAnswers(answerRows)
+
+    const totalQuestions = practice.examQuestions.length
+    const percentageScore = totalQuestions === 0 ? 0 : Math.round((correctCount / totalQuestions) * 100)
+
+    logExamPractice('submit-complete', {
+      examId: input.examId,
+      studentId: input.studentId,
+      correctCount,
+      totalQuestions,
+      percentageScore,
+      insertedAnswerCount: answerRows.length,
+    })
+
+    return {
+      examId: input.examId,
+      studentId: input.studentId,
+      correctCount,
+      totalQuestions,
+      percentageScore,
+    }
+  }
+
+  public async retryExam(examId: string): Promise<ExamRetryResult> {
+    logExamPractice('retry-start', { examId })
+
+    const deletedStudentAnswerCount = await this.repository.deleteStudentAnswersForExam(examId)
+
+    logExamPractice('retry-complete', {
+      examId,
+      deletedStudentAnswerCount,
+      keptTables: ['generated_exams', 'exam_questions', 'questions', 'question_options', 'question_types'],
+    })
+
+    return {
+      examId,
+      deletedStudentAnswerCount,
+    }
+  }
+
+  public async finishExam(examId: string): Promise<ExamFinishResult> {
+    logExamPractice('finish-start', {
+      examId,
+      deletionOrder: ['student_answers', 'exam_questions', 'generated_exams'],
+    })
+
+    const deletedStudentAnswerCount = await this.repository.deleteStudentAnswersForExam(examId)
+    const deletedExamQuestionCount = await this.repository.deleteExamQuestionsForExam(examId)
+    const deletedGeneratedExamCount = await this.repository.deleteGeneratedExam(examId)
+
+    logExamPractice('finish-complete', {
+      examId,
+      deletedStudentAnswerCount,
+      deletedExamQuestionCount,
+      deletedGeneratedExamCount,
+      untouchedTables: ['questions', 'question_options', 'question_types', 'question_difficulty_levels'],
+    })
+
+    return {
+      examId,
+      deletedStudentAnswerCount,
+      deletedExamQuestionCount,
+      deletedGeneratedExamCount,
+    }
+  }
+
+  private assertPracticeSupportsOnlyMcq(
+    examId: string,
+    examQuestions: ExamQuestionWithQuestion[],
+  ): void {
+    const unsupportedQuestions = examQuestions.filter(
+      (examQuestion) => examQuestion.question.questionType.code !== SUPPORTED_PRACTICE_QUESTION_TYPE,
+    )
+
+    if (unsupportedQuestions.length === 0) {
+      return
+    }
+
+    logExamPractice('unsupported-question-types', {
+      examId,
+      supportedType: SUPPORTED_PRACTICE_QUESTION_TYPE,
+      unsupportedQuestions: unsupportedQuestions.map((examQuestion) => ({
+        examQuestionId: examQuestion.id,
+        questionId: examQuestion.question.id,
+        questionTypeCode: examQuestion.question.questionType.code,
+      })),
+    })
+
+    throw new AppError(UNSUPPORTED_EXAM_MESSAGE, 422)
   }
 
   private async selectPracticeTopic(

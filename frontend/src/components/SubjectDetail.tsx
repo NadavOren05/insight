@@ -326,9 +326,11 @@ export const SubjectDetail = () => {
               ) : (
                 <div className="mt-4 space-y-3">
                   {subjectExams.map((exam) => (
-                    <div
+                    <button
+                      type="button"
                       key={exam.id}
-                      className="rounded-2xl border border-white/40 bg-white/60 p-4"
+                      onClick={() => navigate(`/exams/${exam.id}/practice`)}
+                      className="w-full rounded-2xl border border-white/40 bg-white/60 p-4 text-start transition hover:bg-white/80 focus:outline-none focus:ring-4 focus:ring-[#1A6B5A]/15"
                     >
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0">
@@ -345,7 +347,7 @@ export const SubjectDetail = () => {
                           {examStatusLabel[exam.status] ?? exam.status}
                         </span>
                       </div>
-                    </div>
+                    </button>
                   ))}
                 </div>
               )}

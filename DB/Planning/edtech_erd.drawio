@@ -1,0 +1,363 @@
+<mxfile host="Electron" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/26.0.4 Chrome/128.0.6613.186 Electron/32.2.5 Safari/537.36" version="26.0.4">
+  <diagram id="57b908eec6f94145a4331feb5c7d2854" name="EDTECH ERD">
+    <mxGraphModel dx="1909" dy="2344" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1400" pageHeight="1200" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="tbl_schools" value="" style="shape=table;startSize=28;container=1;collapsible=0;childLayout=tableLayout;fixedRows=1;rowLines=0;fontStyle=1;align=center;resizeLast=1;html=1;fillColor=#ffffff;strokeColor=#9673a6;" parent="1" vertex="1">
+          <mxGeometry x="40" y="130" width="250" height="176" as="geometry" />
+        </mxCell>
+        <mxCell id="tbl_schools_header" value="schools" style="shape=partialRectangle;overflow=hidden;connectable=0;fillColor=#fff2cc;strokeColor=#9673a6;fontStyle=1;html=1;align=center;" parent="tbl_schools" vertex="1">
+          <mxGeometry y="28" width="250" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="tbl_schools_r0" value="id uuid PK" style="shape=partialRectangle;overflow=hidden;connectable=1;fillColor=#ffffff;strokeColor=#d6bfe4;html=1;align=left;spacingLeft=8;" parent="tbl_schools" vertex="1">
+          <mxGeometry y="56" width="250" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="tbl_schools_r1" value="name text" style="shape=partialRectangle;overflow=hidden;connectable=1;fillColor=#ffffff;strokeColor=#d6bfe4;html=1;align=left;spacingLeft=8;" parent="tbl_schools" vertex="1">
+          <mxGeometry y="80" width="250" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="tbl_schools_r2" value="city text" style="shape=partialRectangle;overflow=hidden;connectable=1;fillColor=#ffffff;strokeColor=#d6bfe4;html=1;align=left;spacingLeft=8;" parent="tbl_schools" vertex="1">
+          <mxGeometry y="104" width="250" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="tbl_schools_r3" value="district text" style="shape=partialRectangle;overflow=hidden;connectable=1;fillColor=#ffffff;strokeColor=#d6bfe4;html=1;align=left;spacingLeft=8;" parent="tbl_schools" vertex="1">
+          <mxGeometry y="128" width="250" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="tbl_schools_r4" value="peripheral_index int" style="shape=partialRectangle;overflow=hidden;connectable=1;fillColor=#ffffff;strokeColor=#d6bfe4;html=1;align=left;spacingLeft=8;" parent="tbl_schools" vertex="1">
+          <mxGeometry y="152" width="250" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="tbl_teachers" value="" style="shape=table;startSize=28;container=1;collapsible=0;childLayout=tableLayout;fixedRows=1;rowLines=0;fontStyle=1;align=center;resizeLast=1;html=1;fillColor=#ffffff;strokeColor=#9673a6;" parent="1" vertex="1">
+          <mxGeometry x="360" y="40" width="250" height="148" as="geometry" />
+        </mxCell>
+        <mxCell id="tbl_teachers_header" value="teachers" style="shape=partialRectangle;overflow=hidden;connectable=0;fillColor=#fff2cc;strokeColor=#9673a6;fontStyle=1;html=1;align=center;" parent="tbl_teachers" vertex="1">
+          <mxGeometry width="250" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="tbl_teachers_r0" value="id uuid PK" style="shape=partialRectangle;overflow=hidden;connectable=1;fillColor=#ffffff;strokeColor=#d6bfe4;html=1;align=left;spacingLeft=8;" parent="tbl_teachers" vertex="1">
+          <mxGeometry y="28" width="250" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="tbl_teachers_r1" value="school_id uuid FK" style="shape=partialRectangle;overflow=hidden;connectable=1;fillColor=#ffffff;strokeColor=#d6bfe4;html=1;align=left;spacingLeft=8;" parent="tbl_teachers" vertex="1">
+          <mxGeometry y="52" width="250" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="tbl_teachers_r2" value="full_name text" style="shape=partialRectangle;overflow=hidden;connectable=1;fillColor=#ffffff;strokeColor=#d6bfe4;html=1;align=left;spacingLeft=8;" parent="tbl_teachers" vertex="1">
+          <mxGeometry y="76" width="250" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="tbl_teachers_r3" value="email text" style="shape=partialRectangle;overflow=hidden;connectable=1;fillColor=#ffffff;strokeColor=#d6bfe4;html=1;align=left;spacingLeft=8;" parent="tbl_teachers" vertex="1">
+          <mxGeometry y="100" width="250" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="tbl_teachers_r4" value="phone text" style="shape=partialRectangle;overflow=hidden;connectable=1;fillColor=#ffffff;strokeColor=#d6bfe4;html=1;align=left;spacingLeft=8;" parent="tbl_teachers" vertex="1">
+          <mxGeometry y="124" width="250" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="tbl_classes" value="" style="shape=table;startSize=28;container=1;collapsible=0;childLayout=tableLayout;fixedRows=1;rowLines=0;fontStyle=1;align=center;resizeLast=1;html=1;fillColor=#ffffff;strokeColor=#9673a6;" parent="1" vertex="1">
+          <mxGeometry x="630" y="-160" width="250" height="176" as="geometry" />
+        </mxCell>
+        <mxCell id="tbl_classes_header" value="classes" style="shape=partialRectangle;overflow=hidden;connectable=0;fillColor=#fff2cc;strokeColor=#9673a6;fontStyle=1;html=1;align=center;" parent="tbl_classes" vertex="1">
+          <mxGeometry y="28" width="250" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="tbl_classes_r0" value="id uuid PK" style="shape=partialRectangle;overflow=hidden;connectable=1;fillColor=#ffffff;strokeColor=#d6bfe4;html=1;align=left;spacingLeft=8;" parent="tbl_classes" vertex="1">
+          <mxGeometry y="56" width="250" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="tbl_classes_r1" value="school_id uuid FK" style="shape=partialRectangle;overflow=hidden;connectable=1;fillColor=#ffffff;strokeColor=#d6bfe4;html=1;align=left;spacingLeft=8;" parent="tbl_classes" vertex="1">
+          <mxGeometry y="80" width="250" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="tbl_classes_r2" value="name text" style="shape=partialRectangle;overflow=hidden;connectable=1;fillColor=#ffffff;strokeColor=#d6bfe4;html=1;align=left;spacingLeft=8;" parent="tbl_classes" vertex="1">
+          <mxGeometry y="104" width="250" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="tbl_classes_r3" value="grade int" style="shape=partialRectangle;overflow=hidden;connectable=1;fillColor=#ffffff;strokeColor=#d6bfe4;html=1;align=left;spacingLeft=8;" parent="tbl_classes" vertex="1">
+          <mxGeometry y="128" width="250" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="tbl_classes_r4" value="homeroom_teacher_id uuid FK" style="shape=partialRectangle;overflow=hidden;connectable=1;fillColor=#ffffff;strokeColor=#d6bfe4;html=1;align=left;spacingLeft=8;" parent="tbl_classes" vertex="1">
+          <mxGeometry y="152" width="250" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="tbl_students" value="" style="shape=table;startSize=28;container=1;collapsible=0;childLayout=tableLayout;fixedRows=1;rowLines=0;fontStyle=1;align=center;resizeLast=1;html=1;fillColor=#ffffff;strokeColor=#9673a6;" parent="1" vertex="1">
+          <mxGeometry x="1510" y="150" width="250" height="176" as="geometry" />
+        </mxCell>
+        <mxCell id="tbl_students_header" value="students" style="shape=partialRectangle;overflow=hidden;connectable=0;fillColor=#fff2cc;strokeColor=#9673a6;fontStyle=1;html=1;align=center;" parent="tbl_students" vertex="1">
+          <mxGeometry y="28" width="250" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="tbl_students_r0" value="id uuid PK" style="shape=partialRectangle;overflow=hidden;connectable=1;fillColor=#ffffff;strokeColor=#d6bfe4;html=1;align=left;spacingLeft=8;" parent="tbl_students" vertex="1">
+          <mxGeometry y="56" width="250" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="tbl_students_r1" value="class_id uuid FK" style="shape=partialRectangle;overflow=hidden;connectable=1;fillColor=#ffffff;strokeColor=#d6bfe4;html=1;align=left;spacingLeft=8;" parent="tbl_students" vertex="1">
+          <mxGeometry y="80" width="250" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="tbl_students_r2" value="full_name text" style="shape=partialRectangle;overflow=hidden;connectable=1;fillColor=#ffffff;strokeColor=#d6bfe4;html=1;align=left;spacingLeft=8;" parent="tbl_students" vertex="1">
+          <mxGeometry y="104" width="250" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="tbl_students_r3" value="parent_phone text" style="shape=partialRectangle;overflow=hidden;connectable=1;fillColor=#ffffff;strokeColor=#d6bfe4;html=1;align=left;spacingLeft=8;" parent="tbl_students" vertex="1">
+          <mxGeometry y="128" width="250" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="tbl_students_r4" value="created_at timestamp" style="shape=partialRectangle;overflow=hidden;connectable=1;fillColor=#ffffff;strokeColor=#d6bfe4;html=1;align=left;spacingLeft=8;" parent="tbl_students" vertex="1">
+          <mxGeometry y="152" width="250" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="tbl_subjects" value="" style="shape=table;startSize=28;container=1;collapsible=0;childLayout=tableLayout;fixedRows=1;rowLines=0;fontStyle=1;align=center;resizeLast=1;html=1;fillColor=#ffffff;strokeColor=#9673a6;" parent="1" vertex="1">
+          <mxGeometry x="530" y="306" width="250" height="152" as="geometry" />
+        </mxCell>
+        <mxCell id="tbl_subjects_header" value="subjects" style="shape=partialRectangle;overflow=hidden;connectable=0;fillColor=#fff2cc;strokeColor=#9673a6;fontStyle=1;html=1;align=center;" parent="tbl_subjects" vertex="1">
+          <mxGeometry y="28" width="250" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="tbl_subjects_r0" value="id uuid PK" style="shape=partialRectangle;overflow=hidden;connectable=1;fillColor=#ffffff;strokeColor=#d6bfe4;html=1;align=left;spacingLeft=8;" parent="tbl_subjects" vertex="1">
+          <mxGeometry y="56" width="250" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="tbl_subjects_r1" value="class_id uuid FK" style="shape=partialRectangle;overflow=hidden;connectable=1;fillColor=#ffffff;strokeColor=#d6bfe4;html=1;align=left;spacingLeft=8;" parent="tbl_subjects" vertex="1">
+          <mxGeometry y="80" width="250" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="tbl_subjects_r2" value="teacher_id uuid FK" style="shape=partialRectangle;overflow=hidden;connectable=1;fillColor=#ffffff;strokeColor=#d6bfe4;html=1;align=left;spacingLeft=8;" parent="tbl_subjects" vertex="1">
+          <mxGeometry y="104" width="250" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="tbl_subjects_r3" value="name text" style="shape=partialRectangle;overflow=hidden;connectable=1;fillColor=#ffffff;strokeColor=#d6bfe4;html=1;align=left;spacingLeft=8;" parent="tbl_subjects" vertex="1">
+          <mxGeometry y="128" width="250" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="tbl_topics" value="" style="shape=table;startSize=28;container=1;collapsible=0;childLayout=tableLayout;fixedRows=1;rowLines=0;fontStyle=1;align=center;resizeLast=1;html=1;fillColor=#ffffff;strokeColor=#9673a6;" parent="1" vertex="1">
+          <mxGeometry x="920" y="30" width="250" height="152" as="geometry" />
+        </mxCell>
+        <mxCell id="tbl_topics_header" value="topics" style="shape=partialRectangle;overflow=hidden;connectable=0;fillColor=#fff2cc;strokeColor=#9673a6;fontStyle=1;html=1;align=center;" parent="tbl_topics" vertex="1">
+          <mxGeometry y="28" width="250" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="tbl_topics_r0" value="id uuid PK" style="shape=partialRectangle;overflow=hidden;connectable=1;fillColor=#ffffff;strokeColor=#d6bfe4;html=1;align=left;spacingLeft=8;" parent="tbl_topics" vertex="1">
+          <mxGeometry y="56" width="250" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="tbl_topics_r1" value="subject_id uuid FK" style="shape=partialRectangle;overflow=hidden;connectable=1;fillColor=#ffffff;strokeColor=#d6bfe4;html=1;align=left;spacingLeft=8;" parent="tbl_topics" vertex="1">
+          <mxGeometry y="80" width="250" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="tbl_topics_r2" value="name text" style="shape=partialRectangle;overflow=hidden;connectable=1;fillColor=#ffffff;strokeColor=#d6bfe4;html=1;align=left;spacingLeft=8;" parent="tbl_topics" vertex="1">
+          <mxGeometry y="104" width="250" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="tbl_topics_r3" value="taught_date date" style="shape=partialRectangle;overflow=hidden;connectable=1;fillColor=#ffffff;strokeColor=#d6bfe4;html=1;align=left;spacingLeft=8;" parent="tbl_topics" vertex="1">
+          <mxGeometry y="128" width="250" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="tbl_grades" value="" style="shape=table;startSize=28;container=1;collapsible=0;childLayout=tableLayout;fixedRows=1;rowLines=0;fontStyle=1;align=center;resizeLast=1;html=1;fillColor=#ffffff;strokeColor=#9673a6;" parent="1" vertex="1">
+          <mxGeometry x="50" y="640" width="250" height="248" as="geometry" />
+        </mxCell>
+        <mxCell id="tbl_grades_header" value="grades" style="shape=partialRectangle;overflow=hidden;connectable=0;fillColor=#fff2cc;strokeColor=#9673a6;fontStyle=1;html=1;align=center;" parent="tbl_grades" vertex="1">
+          <mxGeometry y="28" width="250" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="tbl_grades_r0" value="id uuid PK" style="shape=partialRectangle;overflow=hidden;connectable=1;fillColor=#ffffff;strokeColor=#d6bfe4;html=1;align=left;spacingLeft=8;" parent="tbl_grades" vertex="1">
+          <mxGeometry y="56" width="250" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="tbl_grades_r1" value="student_id uuid FK" style="shape=partialRectangle;overflow=hidden;connectable=1;fillColor=#ffffff;strokeColor=#d6bfe4;html=1;align=left;spacingLeft=8;" parent="tbl_grades" vertex="1">
+          <mxGeometry y="80" width="250" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="tbl_grades_r2" value="topic_id uuid FK" style="shape=partialRectangle;overflow=hidden;connectable=1;fillColor=#ffffff;strokeColor=#d6bfe4;html=1;align=left;spacingLeft=8;" parent="tbl_grades" vertex="1">
+          <mxGeometry y="104" width="250" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="tbl_grades_r3" value="type enum/text" style="shape=partialRectangle;overflow=hidden;connectable=1;fillColor=#ffffff;strokeColor=#d6bfe4;html=1;align=left;spacingLeft=8;" parent="tbl_grades" vertex="1">
+          <mxGeometry y="128" width="250" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="tbl_grades_r4" value="score int" style="shape=partialRectangle;overflow=hidden;connectable=1;fillColor=#ffffff;strokeColor=#d6bfe4;html=1;align=left;spacingLeft=8;" parent="tbl_grades" vertex="1">
+          <mxGeometry y="152" width="250" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="tbl_grades_r5" value="max_score int" style="shape=partialRectangle;overflow=hidden;connectable=1;fillColor=#ffffff;strokeColor=#d6bfe4;html=1;align=left;spacingLeft=8;" parent="tbl_grades" vertex="1">
+          <mxGeometry y="176" width="250" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="tbl_grades_r6" value="date date" style="shape=partialRectangle;overflow=hidden;connectable=1;fillColor=#ffffff;strokeColor=#d6bfe4;html=1;align=left;spacingLeft=8;" parent="tbl_grades" vertex="1">
+          <mxGeometry y="200" width="250" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="tbl_grades_r7" value="notes text" style="shape=partialRectangle;overflow=hidden;connectable=1;fillColor=#ffffff;strokeColor=#d6bfe4;html=1;align=left;spacingLeft=8;" parent="tbl_grades" vertex="1">
+          <mxGeometry y="224" width="250" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="tbl_attendance" value="" style="shape=table;startSize=26;container=1;collapsible=0;childLayout=tableLayout;fixedRows=1;rowLines=0;fontStyle=1;align=center;resizeLast=1;html=1;fillColor=#ffffff;strokeColor=#9673a6;" parent="1" vertex="1">
+          <mxGeometry x="70" y="410" width="250" height="176" as="geometry" />
+        </mxCell>
+        <mxCell id="tbl_attendance_header" value="attendance" style="shape=partialRectangle;overflow=hidden;connectable=0;fillColor=#fff2cc;strokeColor=#9673a6;fontStyle=1;html=1;align=center;" parent="tbl_attendance" vertex="1">
+          <mxGeometry y="26" width="250" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="tbl_attendance_r0" value="id uuid PK" style="shape=partialRectangle;overflow=hidden;connectable=1;fillColor=#ffffff;strokeColor=#d6bfe4;html=1;align=left;spacingLeft=8;" parent="tbl_attendance" vertex="1">
+          <mxGeometry y="54" width="250" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="tbl_attendance_r1" value="student_id uuid FK" style="shape=partialRectangle;overflow=hidden;connectable=1;fillColor=#ffffff;strokeColor=#d6bfe4;html=1;align=left;spacingLeft=8;" parent="tbl_attendance" vertex="1">
+          <mxGeometry y="78" width="250" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="tbl_attendance_r2" value="topic_id uuid FK" style="shape=partialRectangle;overflow=hidden;connectable=1;fillColor=#ffffff;strokeColor=#d6bfe4;html=1;align=left;spacingLeft=8;" parent="tbl_attendance" vertex="1">
+          <mxGeometry y="102" width="250" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="tbl_attendance_r3" value="date date" style="shape=partialRectangle;overflow=hidden;connectable=1;fillColor=#ffffff;strokeColor=#d6bfe4;html=1;align=left;spacingLeft=8;" parent="tbl_attendance" vertex="1">
+          <mxGeometry y="126" width="250" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="tbl_attendance_r4" value="status enum/text" style="shape=partialRectangle;overflow=hidden;connectable=1;fillColor=#ffffff;strokeColor=#d6bfe4;html=1;align=left;spacingLeft=8;" parent="tbl_attendance" vertex="1">
+          <mxGeometry y="150" width="250" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="tbl_student_ai_analysis" value="" style="shape=table;startSize=28;container=1;collapsible=0;childLayout=tableLayout;fixedRows=1;rowLines=0;fontStyle=1;align=center;resizeLast=1;html=1;fillColor=#ffffff;strokeColor=#9673a6;" parent="1" vertex="1">
+          <mxGeometry x="360" y="520" width="250" height="224" as="geometry" />
+        </mxCell>
+        <mxCell id="tbl_student_ai_analysis_header" value="student_ai_analysis" style="shape=partialRectangle;overflow=hidden;connectable=0;fillColor=#fff2cc;strokeColor=#9673a6;fontStyle=1;html=1;align=center;" parent="tbl_student_ai_analysis" vertex="1">
+          <mxGeometry y="28" width="250" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="tbl_student_ai_analysis_r0" value="id uuid PK" style="shape=partialRectangle;overflow=hidden;connectable=1;fillColor=#ffffff;strokeColor=#d6bfe4;html=1;align=left;spacingLeft=8;" parent="tbl_student_ai_analysis" vertex="1">
+          <mxGeometry y="56" width="250" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="tbl_student_ai_analysis_r1" value="student_id uuid FK" style="shape=partialRectangle;overflow=hidden;connectable=1;fillColor=#ffffff;strokeColor=#d6bfe4;html=1;align=left;spacingLeft=8;" parent="tbl_student_ai_analysis" vertex="1">
+          <mxGeometry y="80" width="250" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="tbl_student_ai_analysis_r2" value="generated_at timestamp" style="shape=partialRectangle;overflow=hidden;connectable=1;fillColor=#ffffff;strokeColor=#d6bfe4;html=1;align=left;spacingLeft=8;" parent="tbl_student_ai_analysis" vertex="1">
+          <mxGeometry y="104" width="250" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="tbl_student_ai_analysis_r3" value="risk_level int" style="shape=partialRectangle;overflow=hidden;connectable=1;fillColor=#ffffff;strokeColor=#d6bfe4;html=1;align=left;spacingLeft=8;" parent="tbl_student_ai_analysis" vertex="1">
+          <mxGeometry y="128" width="250" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="tbl_student_ai_analysis_r4" value="trend text" style="shape=partialRectangle;overflow=hidden;connectable=1;fillColor=#ffffff;strokeColor=#d6bfe4;html=1;align=left;spacingLeft=8;" parent="tbl_student_ai_analysis" vertex="1">
+          <mxGeometry y="152" width="250" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="tbl_student_ai_analysis_r5" value="attendance_flag boolean" style="shape=partialRectangle;overflow=hidden;connectable=1;fillColor=#ffffff;strokeColor=#d6bfe4;html=1;align=left;spacingLeft=8;" parent="tbl_student_ai_analysis" vertex="1">
+          <mxGeometry y="176" width="250" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="tbl_student_ai_analysis_r6" value="parent_summary text" style="shape=partialRectangle;overflow=hidden;connectable=1;fillColor=#ffffff;strokeColor=#d6bfe4;html=1;align=left;spacingLeft=8;" parent="tbl_student_ai_analysis" vertex="1">
+          <mxGeometry y="200" width="250" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="tbl_recommendations" value="" style="shape=table;startSize=28;container=1;collapsible=0;childLayout=tableLayout;fixedRows=1;rowLines=0;fontStyle=1;align=center;resizeLast=1;html=1;fillColor=#ffffff;strokeColor=#9673a6;" parent="1" vertex="1">
+          <mxGeometry x="680" y="830" width="250" height="244" as="geometry" />
+        </mxCell>
+        <mxCell id="tbl_recommendations_header" value="recommendations" style="shape=partialRectangle;overflow=hidden;connectable=0;fillColor=#fff2cc;strokeColor=#9673a6;fontStyle=1;html=1;align=center;" parent="tbl_recommendations" vertex="1">
+          <mxGeometry width="250" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="tbl_recommendations_r0" value="id uuid PK" style="shape=partialRectangle;overflow=hidden;connectable=1;fillColor=#ffffff;strokeColor=#d6bfe4;html=1;align=left;spacingLeft=8;" parent="tbl_recommendations" vertex="1">
+          <mxGeometry y="28" width="250" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="tbl_recommendations_r1" value="analysis_id uuid FK" style="shape=partialRectangle;overflow=hidden;connectable=1;fillColor=#ffffff;strokeColor=#d6bfe4;html=1;align=left;spacingLeft=8;" parent="tbl_recommendations" vertex="1">
+          <mxGeometry y="52" width="250" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="tbl_recommendations_r2" value="student_id uuid FK" style="shape=partialRectangle;overflow=hidden;connectable=1;fillColor=#ffffff;strokeColor=#d6bfe4;html=1;align=left;spacingLeft=8;" parent="tbl_recommendations" vertex="1">
+          <mxGeometry y="76" width="250" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="tbl_recommendations_r3" value="title text" style="shape=partialRectangle;overflow=hidden;connectable=1;fillColor=#ffffff;strokeColor=#d6bfe4;html=1;align=left;spacingLeft=8;" parent="tbl_recommendations" vertex="1">
+          <mxGeometry y="100" width="250" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="tbl_recommendations_r4" value="description text" style="shape=partialRectangle;overflow=hidden;connectable=1;fillColor=#ffffff;strokeColor=#d6bfe4;html=1;align=left;spacingLeft=8;" parent="tbl_recommendations" vertex="1">
+          <mxGeometry y="124" width="250" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="tbl_recommendations_r5" value="recommendation_type text" style="shape=partialRectangle;overflow=hidden;connectable=1;fillColor=#ffffff;strokeColor=#d6bfe4;html=1;align=left;spacingLeft=8;" parent="tbl_recommendations" vertex="1">
+          <mxGeometry y="148" width="250" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="tbl_recommendations_r6" value="priority int" style="shape=partialRectangle;overflow=hidden;connectable=1;fillColor=#ffffff;strokeColor=#d6bfe4;html=1;align=left;spacingLeft=8;" parent="tbl_recommendations" vertex="1">
+          <mxGeometry y="172" width="250" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="tbl_recommendations_r7" value="status text" style="shape=partialRectangle;overflow=hidden;connectable=1;fillColor=#ffffff;strokeColor=#d6bfe4;html=1;align=left;spacingLeft=8;" parent="tbl_recommendations" vertex="1">
+          <mxGeometry y="196" width="250" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="tbl_recommendations_r8" value="created_at timestamp" style="shape=partialRectangle;overflow=hidden;connectable=1;fillColor=#ffffff;strokeColor=#d6bfe4;html=1;align=left;spacingLeft=8;" parent="tbl_recommendations" vertex="1">
+          <mxGeometry y="220" width="250" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="tbl_parent_actions" value="" style="shape=table;startSize=28;container=1;collapsible=0;childLayout=tableLayout;fixedRows=1;rowLines=0;fontStyle=1;align=center;resizeLast=1;html=1;fillColor=#ffffff;strokeColor=#9673a6;" parent="1" vertex="1">
+          <mxGeometry x="1040" y="980" width="250" height="224" as="geometry" />
+        </mxCell>
+        <mxCell id="tbl_parent_actions_header" value="parent_actions" style="shape=partialRectangle;overflow=hidden;connectable=0;fillColor=#fff2cc;strokeColor=#9673a6;fontStyle=1;html=1;align=center;" parent="tbl_parent_actions" vertex="1">
+          <mxGeometry y="28" width="250" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="tbl_parent_actions_r0" value="id uuid PK" style="shape=partialRectangle;overflow=hidden;connectable=1;fillColor=#ffffff;strokeColor=#d6bfe4;html=1;align=left;spacingLeft=8;" parent="tbl_parent_actions" vertex="1">
+          <mxGeometry y="56" width="250" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="tbl_parent_actions_r1" value="student_id uuid FK" style="shape=partialRectangle;overflow=hidden;connectable=1;fillColor=#ffffff;strokeColor=#d6bfe4;html=1;align=left;spacingLeft=8;" parent="tbl_parent_actions" vertex="1">
+          <mxGeometry y="80" width="250" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="tbl_parent_actions_r2" value="recommendation_id uuid FK" style="shape=partialRectangle;overflow=hidden;connectable=1;fillColor=#ffffff;strokeColor=#d6bfe4;html=1;align=left;spacingLeft=8;" parent="tbl_parent_actions" vertex="1">
+          <mxGeometry y="104" width="250" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="tbl_parent_actions_r3" value="action_type text" style="shape=partialRectangle;overflow=hidden;connectable=1;fillColor=#ffffff;strokeColor=#d6bfe4;html=1;align=left;spacingLeft=8;" parent="tbl_parent_actions" vertex="1">
+          <mxGeometry y="128" width="250" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="tbl_parent_actions_r4" value="status text" style="shape=partialRectangle;overflow=hidden;connectable=1;fillColor=#ffffff;strokeColor=#d6bfe4;html=1;align=left;spacingLeft=8;" parent="tbl_parent_actions" vertex="1">
+          <mxGeometry y="152" width="250" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="tbl_parent_actions_r5" value="completed_at timestamp" style="shape=partialRectangle;overflow=hidden;connectable=1;fillColor=#ffffff;strokeColor=#d6bfe4;html=1;align=left;spacingLeft=8;" parent="tbl_parent_actions" vertex="1">
+          <mxGeometry y="176" width="250" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="tbl_parent_actions_r6" value="parent_feedback text" style="shape=partialRectangle;overflow=hidden;connectable=1;fillColor=#ffffff;strokeColor=#d6bfe4;html=1;align=left;spacingLeft=8;" parent="tbl_parent_actions" vertex="1">
+          <mxGeometry y="200" width="250" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="rel_0" value="belongs to" style="endArrow=ERone;startArrow=ERmany;html=1;rounded=0;edgeStyle=orthogonalEdgeStyle;fontSize=10;strokeColor=#666666;" parent="1" source="tbl_teachers" target="tbl_schools" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rel_1" value="part of" style="endArrow=ERone;startArrow=ERmany;html=1;rounded=0;edgeStyle=orthogonalEdgeStyle;fontSize=10;strokeColor=#666666;" parent="1" source="tbl_classes" target="tbl_schools" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rel_2" value="homeroom teacher" style="endArrow=ERone;startArrow=ERmany;html=1;rounded=0;edgeStyle=orthogonalEdgeStyle;fontSize=10;strokeColor=#666666;" parent="1" source="tbl_classes" target="tbl_teachers" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rel_3" value="studies in" style="endArrow=ERone;startArrow=ERmany;html=1;rounded=0;edgeStyle=orthogonalEdgeStyle;fontSize=10;strokeColor=#666666;" parent="1" source="tbl_students" target="tbl_classes" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rel_4" value="taught in" style="endArrow=ERone;startArrow=ERmany;html=1;rounded=0;edgeStyle=orthogonalEdgeStyle;fontSize=10;strokeColor=#666666;" parent="1" source="tbl_subjects" target="tbl_classes" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rel_5" value="taught by" style="endArrow=ERone;startArrow=ERmany;html=1;rounded=0;edgeStyle=orthogonalEdgeStyle;fontSize=10;strokeColor=#666666;" parent="1" source="tbl_subjects" target="tbl_teachers" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rel_6" value="belongs to" style="endArrow=ERone;startArrow=ERmany;html=1;rounded=0;edgeStyle=orthogonalEdgeStyle;fontSize=10;strokeColor=#666666;" parent="1" source="tbl_topics" target="tbl_subjects" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1045" y="220" />
+              <mxPoint x="465" y="220" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="rel_7" value="received by" style="endArrow=ERone;startArrow=ERmany;html=1;rounded=0;edgeStyle=orthogonalEdgeStyle;fontSize=10;strokeColor=#666666;" parent="1" source="tbl_grades" target="tbl_students" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rel_8" value="assessed in" style="endArrow=ERone;startArrow=ERmany;html=1;rounded=0;edgeStyle=orthogonalEdgeStyle;fontSize=10;strokeColor=#666666;" parent="1" source="tbl_grades" target="tbl_topics" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rel_9" value="recorded for" style="endArrow=ERone;startArrow=ERmany;html=1;rounded=0;edgeStyle=orthogonalEdgeStyle;fontSize=10;strokeColor=#666666;" parent="1" source="tbl_ai_analysis_topics" target="tbl_students" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1125" y="490" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="rel_10" value="during topic" style="endArrow=ERone;startArrow=ERmany;html=1;rounded=0;edgeStyle=orthogonalEdgeStyle;fontSize=10;strokeColor=#666666;" parent="1" source="tbl_attendance" target="tbl_topics" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="805" y="470" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="rel_11" value="analyzes" style="endArrow=ERone;startArrow=ERmany;html=1;rounded=0;edgeStyle=orthogonalEdgeStyle;fontSize=10;strokeColor=#666666;" parent="1" source="tbl_student_ai_analysis" target="tbl_students" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rel_12" value="explains" style="endArrow=ERone;startArrow=ERmany;html=1;rounded=0;edgeStyle=orthogonalEdgeStyle;fontSize=10;strokeColor=#666666;" parent="1" source="tbl_ai_analysis_topics" target="tbl_student_ai_analysis" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rel_13" value="topic signal" style="endArrow=ERone;startArrow=ERmany;html=1;rounded=0;edgeStyle=orthogonalEdgeStyle;fontSize=10;strokeColor=#666666;" parent="1" source="tbl_ai_analysis_topics" target="tbl_topics" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rel_14" value="based on" style="endArrow=ERone;startArrow=ERmany;html=1;rounded=0;edgeStyle=orthogonalEdgeStyle;fontSize=10;strokeColor=#666666;" parent="1" source="tbl_recommendations" target="tbl_student_ai_analysis" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rel_15" value="for student" style="endArrow=ERone;startArrow=ERmany;html=1;rounded=0;edgeStyle=orthogonalEdgeStyle;fontSize=10;strokeColor=#666666;" parent="1" source="tbl_recommendations" target="tbl_students" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rel_16" value="responds to" style="endArrow=ERone;startArrow=ERmany;html=1;rounded=0;edgeStyle=orthogonalEdgeStyle;fontSize=10;strokeColor=#666666;" parent="1" source="tbl_parent_actions" target="tbl_recommendations" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rel_17" value="done for" style="endArrow=ERone;startArrow=ERmany;html=1;rounded=0;edgeStyle=orthogonalEdgeStyle;fontSize=10;strokeColor=#666666;" parent="1" source="tbl_parent_actions" target="tbl_students" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="3-3rKU5bzcM3LVPuJeyw-1" value="" style="endArrow=ERone;startArrow=ERmany;html=1;rounded=0;edgeStyle=orthogonalEdgeStyle;fontSize=10;strokeColor=#666666;" edge="1" parent="1" source="tbl_attendance" target="tbl_ai_analysis_topics">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="320" y="490" as="sourcePoint" />
+            <mxPoint x="1125" y="188" as="targetPoint" />
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="tbl_ai_analysis_topics" value="" style="shape=table;startSize=0;container=1;collapsible=0;childLayout=tableLayout;fixedRows=1;rowLines=0;fontStyle=1;align=center;resizeLast=1;html=1;fillColor=#ffffff;strokeColor=#9673a6;" parent="1" vertex="1">
+          <mxGeometry x="1190" y="452" width="250" height="148" as="geometry" />
+        </mxCell>
+        <mxCell id="tbl_ai_analysis_topics_header" value="ai_analysis_topics" style="shape=partialRectangle;overflow=hidden;connectable=0;fillColor=#fff2cc;strokeColor=#9673a6;fontStyle=1;html=1;align=center;" parent="tbl_ai_analysis_topics" vertex="1">
+          <mxGeometry width="250" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="tbl_ai_analysis_topics_r0" value="id uuid PK" style="shape=partialRectangle;overflow=hidden;connectable=1;fillColor=#ffffff;strokeColor=#d6bfe4;html=1;align=left;spacingLeft=8;" parent="tbl_ai_analysis_topics" vertex="1">
+          <mxGeometry y="28" width="250" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="tbl_ai_analysis_topics_r1" value="analysis_id uuid FK" style="shape=partialRectangle;overflow=hidden;connectable=1;fillColor=#ffffff;strokeColor=#d6bfe4;html=1;align=left;spacingLeft=8;" parent="tbl_ai_analysis_topics" vertex="1">
+          <mxGeometry y="52" width="250" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="tbl_ai_analysis_topics_r2" value="topic_id uuid FK" style="shape=partialRectangle;overflow=hidden;connectable=1;fillColor=#ffffff;strokeColor=#d6bfe4;html=1;align=left;spacingLeft=8;" parent="tbl_ai_analysis_topics" vertex="1">
+          <mxGeometry y="76" width="250" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="tbl_ai_analysis_topics_r3" value="type enum/text" style="shape=partialRectangle;overflow=hidden;connectable=1;fillColor=#ffffff;strokeColor=#d6bfe4;html=1;align=left;spacingLeft=8;" parent="tbl_ai_analysis_topics" vertex="1">
+          <mxGeometry y="100" width="250" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="tbl_ai_analysis_topics_r4" value="confidence_score float" style="shape=partialRectangle;overflow=hidden;connectable=1;fillColor=#ffffff;strokeColor=#d6bfe4;html=1;align=left;spacingLeft=8;" parent="tbl_ai_analysis_topics" vertex="1">
+          <mxGeometry y="124" width="250" height="24" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

@@ -3,10 +3,12 @@ import {
   generateSubjectPracticeController,
   getStudentOverviewController,
   getSubjectDetailController,
+  listSubjectExamsController,
 } from '../controllers/studentController.js'
 
 export const studentRoutes = Router()
 
 studentRoutes.get('/:id/overview', getStudentOverviewController)
 studentRoutes.get('/:id/subject/:subjectId', getSubjectDetailController)
+studentRoutes.get('/:id/subject/:subjectId/exams', listSubjectExamsController)
 studentRoutes.post('/:id/subject/:subjectId/generate-practice', generateSubjectPracticeController)

@@ -7,6 +7,7 @@ import type {
   CreatedPracticeExamResponse,
   GeneratedLessonResponse,
   PracticeQuestion,
+  SubjectExamSummary,
 } from '../types/api.js'
 import type { QuestionWithOptions } from '../types/database.js'
 
@@ -107,6 +108,10 @@ const questionToPracticeQuestion = (question: QuestionWithOptions): PracticeQues
 
 const logExamGeneration = (event: string, details: Record<string, unknown>): void => {
   console.info(`[exam-generation] ${event}`, JSON.stringify(details))
+}
+
+const logExamList = (event: string, details: Record<string, unknown>): void => {
+  console.info(`[exam-list] ${event}`, JSON.stringify(details))
 }
 
 const shuffleQuestions = (questions: QuestionWithOptions[]): QuestionWithOptions[] =>
@@ -393,6 +398,50 @@ export class QuestionService {
       recommendationId: selection.recommendationId ?? null,
       message: `נוצר תרגול חדש בנושא ${topic.name} עם ${selectedQuestions.length} שאלות.`,
     }
+  }
+
+  public async listExamsForSubject(studentId: string, subjectId: string): Promise<SubjectExamSummary[]> {
+    logExamList('start', {
+      studentId,
+      subjectId,
+      usingRealDb: this.repository.isUsingRealDb(),
+    })
+
+    const [student, subject] = await Promise.all([
+      this.repository.findStudentById(studentId),
+      this.repository.findSubjectById(subjectId),
+    ])
+
+    if (!student) {
+      throw new AppError('Student was not found', 404)
+    }
+
+    if (!subject) {
+      throw new AppError('Subject was not found', 404)
+    }
+
+    const exams = await this.repository.listGeneratedExamsForSubject(studentId, subjectId)
+
+    logExamList('complete', {
+      studentId,
+      subjectId,
+      examCount: exams.length,
+      examIds: exams.map((exam) => exam.id),
+    })
+
+    return exams.map((exam) => ({
+      _source: exam._source ?? 'mock',
+      id: exam.id,
+      studentId: exam.studentId,
+      subjectId,
+      topicId: exam.targetTopicId,
+      topicName: exam.topicName ?? 'נושא לא ידוע',
+      title: exam.title,
+      status: exam.status,
+      questionCount: exam.questionCount,
+      createdAt: exam.createdAt,
+      completedAt: exam.completedAt,
+    }))
   }
 
   private async selectPracticeTopic(

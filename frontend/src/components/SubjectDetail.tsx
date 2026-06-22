@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion'
 import { ArrowRight, Loader2, Sparkles } from 'lucide-react'
-import { useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { AppBackground } from './AppBackground'
 import { BottomNavigation } from './BottomNavigation'
@@ -8,6 +8,40 @@ import { SourceDot } from './SourceDot'
 import { StatusBadge } from './StatusBadge'
 import { api } from '../services/api'
 import { useSubjectDetail } from '../hooks/useSubjectDetail'
+import type { SubjectExamSummary } from '../types/api'
+
+const examStatusLabel: Record<string, string> = {
+  generated: 'פתוח',
+  in_progress: 'בתהליך',
+  completed: 'הושלם',
+  cancelled: 'בוטל',
+}
+
+const getExamStatusClassName = (status: string): string => {
+  if (status === 'completed') {
+    return 'bg-emerald-50 text-emerald-700 ring-emerald-100'
+  }
+
+  if (status === 'cancelled') {
+    return 'bg-slate-100 text-slate-500 ring-slate-200'
+  }
+
+  return 'bg-amber-50 text-amber-700 ring-amber-100'
+}
+
+const formatExamDate = (value: string): string => {
+  const date = new Date(value)
+
+  if (Number.isNaN(date.getTime())) {
+    return value
+  }
+
+  return new Intl.DateTimeFormat('he-IL', {
+    day: '2-digit',
+    month: '2-digit',
+    year: '2-digit',
+  }).format(date)
+}
 
 export const SubjectDetail = () => {
   const {
@@ -28,6 +62,28 @@ export const SubjectDetail = () => {
     tone: 'success' | 'error'
     text: string
   } | null>(null)
+  const [subjectExams, setSubjectExams] = useState<SubjectExamSummary[]>([])
+  const [isLoadingSubjectExams, setIsLoadingSubjectExams] = useState(false)
+  const [subjectExamsError, setSubjectExamsError] = useState<string | null>(null)
+
+  const loadSubjectExams = useCallback(async () => {
+    setIsLoadingSubjectExams(true)
+    setSubjectExamsError(null)
+
+    try {
+      const exams = await api.students.listSubjectExams(student.id, detail.id)
+
+      setSubjectExams(exams)
+    } catch {
+      setSubjectExamsError('לא הצלחנו לטעון את התרגולים הקיימים.')
+    } finally {
+      setIsLoadingSubjectExams(false)
+    }
+  }, [detail.id, student.id])
+
+  useEffect(() => {
+    void loadSubjectExams()
+  }, [loadSubjectExams])
 
   const handleCreatePracticeExam = async () => {
     setIsCreatingExam(true)
@@ -40,6 +96,7 @@ export const SubjectDetail = () => {
         tone: 'success',
         text: `התרגול נוצר בהצלחה: ${exam.questionCount} שאלות בנושא ${exam.topicName}.`,
       })
+      void loadSubjectExams()
     } catch (error) {
       setExamNotification({
         tone: 'error',
@@ -243,6 +300,55 @@ export const SubjectDetail = () => {
                   {examNotification.text}
                 </div>
               ) : null}
+            </section>
+
+            <section className="rounded-3xl border border-white/20 bg-white/70 p-5 text-start shadow-[0_14px_45px_rgba(15,23,42,0.08)] backdrop-blur-md">
+              <div className="flex items-center justify-between gap-4">
+                <h2 className="text-xl font-black text-slate-950">תרגולים קיימים</h2>
+                <span className="rounded-full bg-white/80 px-3 py-1 text-xs font-black text-slate-500 ring-1 ring-white/60">
+                  {subjectExams.length}
+                </span>
+              </div>
+
+              {isLoadingSubjectExams ? (
+                <div className="mt-4 flex items-center gap-2 rounded-2xl bg-white/60 p-4 text-sm font-black text-[#1A6B5A]">
+                  <Loader2 className="size-4 animate-spin" aria-hidden="true" />
+                  טוען תרגולים...
+                </div>
+              ) : subjectExamsError ? (
+                <div className="mt-4 rounded-2xl bg-red-50 p-4 text-sm font-black text-red-700 ring-1 ring-red-100">
+                  {subjectExamsError}
+                </div>
+              ) : subjectExams.length === 0 ? (
+                <p className="mt-4 rounded-2xl bg-white/60 p-4 text-sm font-bold text-slate-500">
+                  עדיין לא נוצרו תרגולים בנושא הזה.
+                </p>
+              ) : (
+                <div className="mt-4 space-y-3">
+                  {subjectExams.map((exam) => (
+                    <div
+                      key={exam.id}
+                      className="rounded-2xl border border-white/40 bg-white/60 p-4"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <h3 className="truncate text-base font-black text-slate-900">
+                            {exam.title}
+                          </h3>
+                          <p className="mt-1 text-sm font-bold text-slate-500">
+                            {exam.topicName} · {exam.questionCount} שאלות · {formatExamDate(exam.createdAt)}
+                          </p>
+                        </div>
+                        <span
+                          className={`shrink-0 rounded-full px-3 py-1 text-xs font-black ring-1 ${getExamStatusClassName(exam.status)}`}
+                        >
+                          {examStatusLabel[exam.status] ?? exam.status}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </section>
           </motion.div>
         )}

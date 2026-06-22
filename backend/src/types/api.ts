@@ -125,6 +125,19 @@ export interface CreatedPracticeExamResponse {
   message: string
 }
 
+export interface SubjectExamSummary extends ApiSourceMeta {
+  id: string
+  studentId: string
+  subjectId: string
+  topicId: string | null
+  topicName: string
+  title: string
+  status: string
+  questionCount: number
+  createdAt: string
+  completedAt: string | null
+}
+
 export interface RawSubjectBundle {
   student: Student
   subject: Subject

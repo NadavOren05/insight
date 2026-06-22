@@ -90,6 +90,12 @@ interface GeneratedQuestionInput {
   }>
 }
 
+export interface GeneratedExamWithTopic extends GeneratedExam {
+  subjectId: string | null
+  topicName: string | null
+  questionCount: number
+}
+
 const ensureRecord = (value: unknown): Record<string, unknown> => {
   if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
     return value as Record<string, unknown>
@@ -1194,6 +1200,82 @@ export class StudentRepository {
     }
 
     return (Array.isArray(data) ? data : []).map((row) => mapExamQuestion(ensureRecord(row)))
+  }
+
+  public async listGeneratedExamsForSubject(
+    studentId: string,
+    subjectId: string,
+  ): Promise<GeneratedExamWithTopic[]> {
+    if (!this.useRealDb) {
+      return mockGeneratedExams
+        .filter((exam) => {
+          const topic = mockTopics.find((item) => item.id === exam.targetTopicId)
+
+          return exam.studentId === studentId && topic?.subjectId === subjectId
+        })
+        .sort((firstExam, secondExam) => secondExam.createdAt.localeCompare(firstExam.createdAt))
+        .map((exam) => {
+          const topic = mockTopics.find((item) => item.id === exam.targetTopicId)
+
+          return {
+            ...withSource(exam, 'mock'),
+            subjectId: topic?.subjectId ?? null,
+            topicName: topic?.name ?? null,
+            questionCount: mockExamQuestions.filter((question) => question.examId === exam.id).length,
+          }
+        })
+    }
+
+    const { data, error } = await this.client
+      .from('generated_exams')
+      .select('*, topics!inner ( id, subject_id, name )')
+      .eq('student_id', studentId)
+      .eq('topics.subject_id', subjectId)
+      .order('created_at', { ascending: false })
+
+    if (error) {
+      throw new AppError('Failed to fetch generated exams', 500, error.message)
+    }
+
+    const exams = (Array.isArray(data) ? data : []).map((row) => {
+      const record = ensureRecord(row)
+      const topic = ensureRecord(record.topics)
+
+      return {
+        ...mapGeneratedExam(record),
+        subjectId: nullableString(topic.subject_id),
+        topicName: nullableString(topic.name),
+        questionCount: 0,
+      }
+    })
+
+    if (exams.length === 0) {
+      return []
+    }
+
+    const examIds = exams.map((exam) => exam.id)
+    const { data: examQuestionData, error: examQuestionError } = await this.client
+      .from('exam_questions')
+      .select('exam_id')
+      .in('exam_id', examIds)
+
+    if (examQuestionError) {
+      throw new AppError('Failed to fetch exam question counts', 500, examQuestionError.message)
+    }
+
+    const questionCounts = new Map<string, number>()
+
+    for (const row of Array.isArray(examQuestionData) ? examQuestionData : []) {
+      const record = ensureRecord(row)
+      const examId = String(record.exam_id ?? '')
+
+      questionCounts.set(examId, (questionCounts.get(examId) ?? 0) + 1)
+    }
+
+    return exams.map((exam) => ({
+      ...exam,
+      questionCount: questionCounts.get(exam.id) ?? 0,
+    }))
   }
 
   public async updateParentActionStatus(input: {

@@ -3,6 +3,7 @@ import type {
   GeneratedLessonResponse,
   LoginResponse,
   OverviewResponse,
+  SubjectExamSummary,
   SubjectDetailResponse,
 } from '../types/api'
 
@@ -99,6 +100,17 @@ const getSubjectDetail = async (
   }
 }
 
+const listSubjectExams = async (
+  studentId: string,
+  subjectId: string,
+): Promise<SubjectExamSummary[]> => {
+  const response = await request<{ exams: SubjectExamSummary[] }>(
+    `/students/${studentId}/subject/${subjectId}/exams`,
+  )
+
+  return response.exams
+}
+
 const generateLesson = async (
   studentId: string,
   topicId: string,
@@ -123,6 +135,7 @@ export const api = {
   students: {
     getOverview,
     getSubjectDetail,
+    listSubjectExams,
   },
   practice: {
     generateLesson,

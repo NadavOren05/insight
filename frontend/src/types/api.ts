@@ -119,3 +119,16 @@ export interface CreatedPracticeExamResponse {
   recommendationId: string | null
   message: string
 }
+
+export interface SubjectExamSummary extends ApiSourceMeta {
+  id: string
+  studentId: string
+  subjectId: string
+  topicId: string | null
+  topicName: string
+  title: string
+  status: string
+  questionCount: number
+  createdAt: string
+  completedAt: string | null
+}

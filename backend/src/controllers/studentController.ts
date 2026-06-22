@@ -44,3 +44,14 @@ export const generateSubjectPracticeController: RequestHandler = async (request,
     next(error)
   }
 }
+
+export const listSubjectExamsController: RequestHandler = async (request, response, next) => {
+  try {
+    const { id, subjectId } = subjectParamsSchema.parse(request.params)
+    const exams = await questionService.listExamsForSubject(id, subjectId)
+
+    response.json({ exams })
+  } catch (error) {
+    next(error)
+  }
+}

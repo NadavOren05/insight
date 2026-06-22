@@ -26,7 +26,7 @@ python DB\SeedData\QuestionsBankSchemas\generate_fake_question_bank_data.py
 Optional sizing:
 
 ```powershell
-python DB\SeedData\QuestionsBankSchemas\generate_fake_question_bank_data.py --questions-per-topic 3 --exam-count 12
+python DB\SeedData\QuestionsBankSchemas\generate_fake_question_bank_data.py --questions-per-topic 12 --exam-count 12
 ```
 
 ## Load into Supabase

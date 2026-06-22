@@ -92,20 +92,20 @@ HEADERS = {
 DIFFICULTY_LEVELS = [
     {
         "code": "easy",
-        "name": "Easy",
-        "description": "Checks basic recall or a direct classroom skill.",
+        "name": "קל",
+        "description": "בודק זיכרון בסיסי או מיומנות ישירה מהכיתה.",
         "sort_order": 1,
     },
     {
         "code": "medium",
-        "name": "Medium",
-        "description": "Requires applying the skill in a familiar situation.",
+        "name": "בינוני",
+        "description": "דורש יישום של המיומנות במצב מוכר.",
         "sort_order": 2,
     },
     {
         "code": "hard",
-        "name": "Hard",
-        "description": "Requires explanation, transfer, or multi-step reasoning.",
+        "name": "קשה",
+        "description": "דורש הסבר, העברה או חשיבה בכמה שלבים.",
         "sort_order": 3,
     },
 ]
@@ -113,20 +113,96 @@ DIFFICULTY_LEVELS = [
 QUESTION_TYPES = [
     {
         "code": "mcq",
-        "name": "Multiple choice",
-        "description": "Student selects one answer from several options.",
+        "name": "רב ברירה",
+        "description": "התלמיד/ה בוחר/ת תשובה אחת מתוך כמה אפשרויות.",
     },
     {
         "code": "open_answer",
-        "name": "Open answer",
-        "description": "Student writes a short free-text answer.",
+        "name": "תשובה פתוחה",
+        "description": "התלמיד/ה כותב/ת תשובה קצרה בטקסט חופשי.",
     },
     {
         "code": "true_false",
-        "name": "True or false",
-        "description": "Student decides whether a statement is true or false.",
+        "name": "נכון או לא נכון",
+        "description": "התלמיד/ה מחליט/ה אם הטענה נכונה או לא נכונה.",
     },
 ]
+
+MCQ_BANK_BY_TOPIC = {
+    "שברים": [
+        ("איזה שבר שווה ל-1/2?", "2/4", ["1/3", "2/4", "3/5", "4/7"]),
+        ("מה המכנה המשותף הקטן ביותר של 1/3 ו-1/6?", "6", ["3", "6", "9", "12"]),
+        ("כמה זה 1/4 + 1/4?", "1/2", ["1/4", "1/2", "2/8", "3/4"]),
+        ("איזה שבר גדול יותר: 2/3 או 1/3?", "2/3", ["1/3", "2/3", "1/6", "2/6"]),
+        ("מה התוצאה של 3/4 - 1/4?", "1/2", ["1/4", "1/2", "2/4", "1"]),
+        ("איזה שבר שווה ל-3/6?", "1/2", ["1/2", "2/3", "3/4", "1/6"]),
+        ("כמה רבעים יש בשלם אחד?", "4", ["2", "3", "4", "8"]),
+        ("מהו 1/2 מתוך 10?", "5", ["2", "4", "5", "10"]),
+        ("איזה שבר קטן יותר: 1/5 או 1/2?", "1/5", ["1/5", "1/2", "2/5", "5/2"]),
+        ("מה המכנה המשותף הקטן ביותר של 1/4 ו-1/8?", "8", ["4", "8", "12", "16"]),
+        ("איזה שבר שווה ל-4/8?", "1/2", ["1/4", "1/2", "3/8", "4/6"]),
+        ("כמה זה 2/5 + 1/5?", "3/5", ["2/10", "3/5", "3/10", "1/5"]),
+        ("איזה שבר גדול יותר: 3/4 או 2/4?", "3/4", ["1/4", "2/4", "3/4", "4/4"]),
+        ("מה התוצאה של 5/6 - 2/6?", "3/6", ["2/6", "3/6", "5/12", "7/6"]),
+        ("איזה שבר שווה ל-2/8 לאחר צמצום?", "1/4", ["1/2", "1/4", "2/4", "4/8"]),
+    ],
+    "גיאומטריה": [
+        ("כמה צלעות יש למלבן?", "4", ["3", "4", "5", "6"]),
+        ("איזו צורה כוללת שלוש צלעות?", "משולש", ["ריבוע", "משולש", "מלבן", "מחומש"]),
+        ("מה מאפיין ריבוע?", "כל הצלעות שוות", ["יש לו צלע אחת", "כל הצלעות שוות", "אין לו זוויות", "יש לו חמש צלעות"]),
+        ("כמה זוויות יש במשולש?", "3", ["2", "3", "4", "5"]),
+        ("איזו צורה היא עיגול?", "צורה ללא צלעות ישרות", ["צורה עם שלוש צלעות", "צורה ללא צלעות ישרות", "צורה עם ארבע פינות", "צורה עם חמש צלעות"]),
+        ("במלבן, אילו צלעות שוות?", "הצלעות הנגדיות", ["כל הצלעות תמיד שונות", "הצלעות הנגדיות", "רק צלע אחת", "אין צלעות שוות"]),
+        ("איזה גוף תלת ממדי נראה כמו קופסה?", "תיבה", ["כדור", "תיבה", "חרוט", "גליל"]),
+        ("מהו קו ישר?", "קו שאינו מתעקל", ["קו שאינו מתעקל", "קו מעגלי", "נקודה אחת", "זווית בלבד"]),
+        ("איזו זווית קטנה מזווית ישרה?", "זווית חדה", ["זווית קהה", "זווית שטוחה", "זווית חדה", "זווית מלאה"]),
+        ("כמה צלעות יש למחומש?", "5", ["4", "5", "6", "8"]),
+        ("מה מודדים בהיקף?", "את אורך המסגרת", ["את שטח הפנים", "את אורך המסגרת", "את המשקל", "את מספר הצבעים"]),
+        ("מה מודדים בשטח?", "כמה מקום הצורה מכסה", ["כמה מקום הצורה מכסה", "כמה הצורה גבוהה", "כמה הצורה כבדה", "כמה זמן נדרש לצייר"]),
+    ],
+    "בעיות מילוליות": [
+        ("אם לדנה היו 8 עפרונות והיא קיבלה עוד 5, כמה עפרונות יש לה?", "13", ["3", "12", "13", "15"]),
+        ("בכיתה יש 24 תלמידים. 6 יצאו לספרייה. כמה נשארו בכיתה?", "18", ["16", "18", "20", "30"]),
+        ("יואב חילק 12 מדבקות שווה בשווה בין 3 חברים. כמה קיבל כל חבר?", "4", ["3", "4", "6", "9"]),
+        ("בכל קופסה יש 5 כדורים. כמה כדורים יש ב-4 קופסאות?", "20", ["9", "15", "20", "25"]),
+        ("נועה קראה 7 עמודים ביום ראשון ו-9 ביום שני. כמה עמודים קראה יחד?", "16", ["14", "16", "18", "19"]),
+        ("בחנות היו 30 מחברות ונמכרו 11. כמה מחברות נשארו?", "19", ["11", "18", "19", "41"]),
+        ("אם 5 ילדים קיבלו 2 תפוחים כל אחד, כמה תפוחים חולקו?", "10", ["7", "10", "12", "15"]),
+        ("רכבת יצאה ב-8:00 והנסיעה נמשכה שעתיים. מתי הגיעה?", "10:00", ["9:00", "10:00", "11:00", "12:00"]),
+        ("בשקית יש 18 סוכריות. מחלקים אותן בין 6 ילדים. כמה יקבל כל ילד?", "3", ["2", "3", "6", "12"]),
+        ("מיכל קנתה 3 ספרים במחיר 10 שקלים כל אחד. כמה שילמה?", "30", ["13", "20", "30", "40"]),
+        ("אם היו 14 פרחים וקטפו 4, כמה נשארו?", "10", ["8", "10", "14", "18"]),
+        ("איזו פעולה מתאימה למילה 'נשארו' בבעיה?", "חיסור", ["חיבור", "חיסור", "כפל", "השוואת צבעים"]),
+    ],
+    "הבנת הנקרא": [
+        ("מה כדאי לעשות לפני שעונים על שאלה על טקסט?", "לקרוא את הטקסט בעיון", ["לנחש מיד", "לדלג על הכותרת", "לקרוא את הטקסט בעיון", "לענות לפי זיכרון בלבד"]),
+        ("מהו רעיון מרכזי?", "המסר העיקרי של הטקסט", ["פרט קטן", "שם הכותב", "המסר העיקרי של הטקסט", "מספר העמוד"]),
+        ("איזו מילה עוזרת לזהות סיבה?", "כי", ["אבל", "כי", "גם", "או"]),
+        ("מה עושים כשמופיעה מילה לא מוכרת?", "בודקים לפי ההקשר", ["מוחקים אותה", "בודקים לפי ההקשר", "מתעלמים מכל המשפט", "מסיימים לקרוא"]),
+        ("מהי כותרת טובה?", "כותרת שמרמזת על נושא הטקסט", ["כותרת אקראית", "כותרת שמרמזת על נושא הטקסט", "כותרת ארוכה תמיד", "כותרת עם מספר בלבד"]),
+        ("מהו פרט תומך?", "מידע שמחזק את הרעיון המרכזי", ["שם של צבע", "מידע שמחזק את הרעיון המרכזי", "שאלה בלי תשובה", "מילה באנגלית"]),
+        ("איזו שאלה בודקת רצף אירועים?", "מה קרה אחר כך?", ["מי כתב?", "מה קרה אחר כך?", "כמה אותיות?", "איזה צבע?"]),
+        ("מה פירוש להסיק מסקנה?", "להבין משהו שלא נאמר במפורש", ["להעתיק משפט", "להבין משהו שלא נאמר במפורש", "לספור מילים", "לקרוא רק כותרת"]),
+        ("מה כדאי לסמן בזמן קריאה?", "מידע חשוב", ["כל מילה", "מידע חשוב", "רווחים בלבד", "מספרי שורות בלבד"]),
+        ("איזו תשובה טובה לשאלה על טקסט?", "תשובה שמבוססת על הטקסט", ["תשובה בלי קשר", "תשובה שמבוססת על הטקסט", "תשובה הכי קצרה תמיד", "תשובה באנגלית בלבד"]),
+        ("מה עוזר לזהות דמות מרכזית?", "מי מופיע ופועל לאורך הטקסט", ["מי מופיע רק פעם אחת", "מי מופיע ופועל לאורך הטקסט", "המילה הארוכה ביותר", "סימני הפיסוק"]),
+        ("מה עושים אחרי קריאת פסקה קשה?", "חוזרים וקוראים שוב לאט", ["מדלגים עליה", "חוזרים וקוראים שוב לאט", "סוגרים את הספר", "משנים את הכותרת"]),
+    ],
+    "מבנה כתיבה": [
+        ("מה צריך להופיע בתחילת תשובה מנומקת?", "טענה ברורה", ["סיכום בלבד", "טענה ברורה", "רשימת צבעים", "שאלה חדשה"]),
+        ("איזה חלק מחזק טענה?", "נימוק", ["ניחוש", "נימוק", "כותרת בלבד", "מספר עמוד"]),
+        ("מהו משפט פתיחה טוב?", "משפט שמציג את הרעיון", ["משפט לא קשור", "משפט שמציג את הרעיון", "מילה אחת בלבד", "סימן שאלה"]),
+        ("מה כדאי לעשות בסוף פסקה?", "לסכם את הרעיון", ["להתחיל נושא אחר בלי קשר", "לסכם את הרעיון", "למחוק את הנימוק", "להוסיף תרגיל חשבון"]),
+        ("איזו מילת קישור מתאימה להוספת רעיון?", "בנוסף", ["לכן", "בנוסף", "אבל", "לפני"]),
+        ("איזו מילת קישור מתאימה למסקנה?", "לכן", ["לכן", "גם", "או", "אולי"]),
+        ("מה הופך תשובה לברורה?", "סדר הגיוני בין המשפטים", ["הרבה סימני קריאה", "סדר הגיוני בין המשפטים", "בלי רווחים", "משפטים אקראיים"]),
+        ("מהו נימוק טוב?", "הסבר שתומך בטענה", ["מילה לא קשורה", "הסבר שתומך בטענה", "ציור בלבד", "תאריך"]),
+        ("מה כדאי לבדוק לפני שמגישים תשובה?", "שהמשפטים קשורים לשאלה", ["רק את צבע העיפרון", "שהמשפטים קשורים לשאלה", "כמה שורות יש", "אם יש מספרים"]),
+        ("מה תפקיד הדוגמה?", "להמחיש את ההסבר", ["להחליף את הטענה", "להמחיש את ההסבר", "לסיים בלי נימוק", "לבלבל את הקורא"]),
+        ("מהי פסקה?", "קבוצת משפטים סביב רעיון אחד", ["מילה אחת", "קבוצת משפטים סביב רעיון אחד", "רק כותרת", "רשימת מספרים"]),
+        ("איזו תשובה עדיפה?", "תשובה עם טענה ונימוק", ["תשובה עם טענה ונימוק", "תשובה בלי הסבר", "תשובה אקראית", "תשובה רק של מילה אחת"]),
+    ],
+}
 
 
 def stable_id(name: str) -> str:
@@ -214,42 +290,43 @@ def build_lookup_rows() -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     return difficulty_rows, type_rows
 
 
-def topic_prompt(topic_name: str, difficulty_code: str, question_type_code: str, index: int) -> tuple[str, str]:
-    if question_type_code == "mcq":
-        if topic_name == "Fractions":
-            return "Which fraction is equal to one half?", "2/4"
-        if topic_name == "Geometry":
-            return "How many sides does a rectangle have?", "4"
-        if topic_name == "Vocabulary":
-            return "Which word means the same as 'quick'?", "fast"
-        return f"Which answer best matches the topic '{topic_name}'?", "the main idea"
+def fallback_mcq(topic_name: str, index: int) -> tuple[str, str, list[str]]:
+    prompts = [
+        (
+            f"מהו הצעד הראשון שכדאי לבצע כשמתרגלים את הנושא {topic_name}?",
+            "לקרוא את ההוראה בעיון",
+            ["לקרוא את ההוראה בעיון", "לנחש מיד", "לדלג על השאלה", "לבחור תשובה אקראית"],
+        ),
+        (
+            f"איזו פעולה עוזרת לבדוק הבנה בנושא {topic_name}?",
+            "להסביר דוגמה במילים שלי",
+            ["להעתיק בלי להבין", "להסביר דוגמה במילים שלי", "לסמן תשובה בלי בדיקה", "להתעלם מהמילים הקשות"],
+        ),
+        (
+            f"מה כדאי לעשות אחרי טעות בנושא {topic_name}?",
+            "לבדוק איפה התחיל הקושי",
+            ["לעבור הלאה בלי לבדוק", "לבדוק איפה התחיל הקושי", "למחוק את השאלה", "לבחור אותה תשובה שוב"],
+        ),
+        (
+            f"איזו תשובה מראה הבנה טובה בנושא {topic_name}?",
+            "תשובה שמבוססת על הסבר",
+            ["תשובה שמבוססת על הסבר", "תשובה אקראית", "תשובה בלי קשר לשאלה", "תשובה ריקה"],
+        ),
+    ]
+    return prompts[index % len(prompts)]
 
-    if question_type_code == "true_false":
-        if topic_name == "Word problems":
-            return "A word problem should be read carefully before choosing the operation.", "true"
-        if topic_name == "Grammar":
-            return "Every complete sentence should express a full idea.", "true"
-        return f"Practicing {topic_name} can help strengthen classroom understanding.", "true"
 
-    if difficulty_code == "hard":
-        return f"Explain one strategy a student can use when working on {topic_name}.", "Use a clear step-by-step strategy and check the answer."
-    return f"Write a short answer that shows understanding of {topic_name}.", f"A correct answer should use the main idea of {topic_name}."
+def topic_prompt(topic_name: str, index: int) -> tuple[str, str, list[str]]:
+    topic_bank = MCQ_BANK_BY_TOPIC.get(topic_name)
+    if topic_bank:
+        return topic_bank[index % len(topic_bank)]
+    return fallback_mcq(topic_name, index)
 
 
-def build_options(question_id: str, correct_answer: str, question_type_code: str) -> list[dict[str, Any]]:
-    if question_type_code == "open_answer":
-        return []
-
-    if question_type_code == "true_false":
-        options = ["true", "false"]
-    elif correct_answer == "2/4":
-        options = ["1/3", "2/4", "3/5", "4/6"]
-    elif correct_answer == "4":
-        options = ["3", "4", "5", "6"]
-    elif correct_answer == "fast":
-        options = ["quiet", "fast", "late", "small"]
-    else:
-        options = ["a detail", "the main idea", "an unrelated fact", "a title only"]
+def build_options(question_id: str, correct_answer: str, options: list[str]) -> list[dict[str, Any]]:
+    normalized_options = list(dict.fromkeys(options))
+    if correct_answer not in normalized_options:
+        normalized_options.insert(0, correct_answer)
 
     return [
         {
@@ -260,7 +337,7 @@ def build_options(question_id: str, correct_answer: str, question_type_code: str
             "sort_order": sort_order,
             "created_at": timestamp(),
         }
-        for sort_order, option in enumerate(options, start=1)
+        for sort_order, option in enumerate(normalized_options, start=1)
     ]
 
 
@@ -277,19 +354,13 @@ def build_questions(
     options: list[dict[str, Any]] = []
     questions_by_topic: dict[str, list[dict[str, Any]]] = {}
     difficulty_cycle = ["easy", "medium", "hard"]
-    type_cycle = ["mcq", "open_answer", "true_false"]
 
     for topic in topics:
         subject = subject_by_id[topic["subject_id"]]
         for index in range(questions_per_topic):
             difficulty_code = difficulty_cycle[index % len(difficulty_cycle)]
-            question_type_code = type_cycle[index % len(type_cycle)]
-            question_text, correct_answer = topic_prompt(
-                topic["name"],
-                difficulty_code,
-                question_type_code,
-                index + 1,
-            )
+            question_type_code = "mcq"
+            question_text, correct_answer, option_texts = topic_prompt(topic["name"], index)
             question_id = stable_id(f"question:{topic['id']}:{index + 1}")
             metadata = {
                 "topic_name": topic["name"],
@@ -304,7 +375,7 @@ def build_questions(
                 "question_type_id": type_by_code[question_type_code],
                 "question_text": question_text,
                 "correct_answer": correct_answer,
-                "metadata_json": json.dumps(metadata, separators=(",", ":")),
+                "metadata_json": json.dumps(metadata, ensure_ascii=False, separators=(",", ":")),
                 "source": "human_created" if index == 0 else "imported",
                 "is_active": True,
                 "created_at": timestamp(),
@@ -312,7 +383,7 @@ def build_questions(
             }
             questions.append(row)
             questions_by_topic.setdefault(topic["id"], []).append(row)
-            options.extend(build_options(question_id, correct_answer, question_type_code))
+            options.extend(build_options(question_id, correct_answer, option_texts))
 
     for question in questions:
         question.pop("_question_type_code")
@@ -369,8 +440,8 @@ def build_exams(
                 "student_id": student["id"],
                 "recommendation_id": recommendation_id,
                 "target_topic_id": target_topic["id"],
-                "title": f"{topic_name} Practice Assessment",
-                "generation_reason": "Generated from recent learning data and parent-facing recommendations.",
+                "title": f"תרגול בנושא {topic_name}",
+                "generation_reason": "נוצר על בסיס נתוני למידה אחרונים והמלצות שמיועדות להורים.",
                 "status": status,
                 "created_at": timestamp(2),
                 "completed_at": completed_at,
@@ -405,7 +476,7 @@ def build_exams(
                 selected_option_id = selected["id"]
                 answer_text = selected["option_text"]
             elif not is_correct:
-                answer_text = "I am not sure yet."
+                answer_text = "עדיין לא בטוח/ה"
 
             student_answers.append(
                 {
@@ -471,7 +542,7 @@ def write_all(rows_by_table: dict[str, list[dict[str, Any]]]) -> None:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Generate deterministic fake question-bank CSV and SQL seed data.")
-    parser.add_argument("--questions-per-topic", type=int, default=3)
+    parser.add_argument("--questions-per-topic", type=int, default=12)
     parser.add_argument("--exam-count", type=int, default=12)
     parser.add_argument("--seed", type=int, default=84)
     return parser.parse_args()

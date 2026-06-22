@@ -27,7 +27,7 @@ export const now = '2026-06-22T00:00:00.000Z'
 export const mockSchools: School[] = [
   {
     id: 'school-insight',
-    name: 'Insight Demo School',
+    name: 'בית ספר הדגמה אינסייט',
     city: 'תל אביב',
     district: 'מרכז',
     peripheralIndex: 5,
@@ -143,11 +143,11 @@ export const mockSubjects: Subject[] = [
 ]
 
 export const mockTopics: Topic[] = [
-  { id: 'fractions', subjectId: 'math', name: 'Fractions', taughtDate: '2026-05-12', createdAt: now },
+  { id: 'fractions', subjectId: 'math', name: 'שברים', taughtDate: '2026-05-12', createdAt: now },
   { id: 'common-denominator', subjectId: 'math', name: 'מכנה משותף', taughtDate: '2026-05-19', createdAt: now },
   { id: 'decimals', subjectId: 'math', name: 'מספרים עשרוניים', taughtDate: '2026-06-09', createdAt: now },
   { id: 'equations', subjectId: 'math', name: 'משוואות בסיסיות', taughtDate: '2026-06-16', createdAt: now },
-  { id: 'vocabulary', subjectId: 'english', name: 'Vocabulary practice', taughtDate: '2026-06-06', createdAt: now },
+  { id: 'vocabulary', subjectId: 'english', name: 'תרגול אוצר מילים', taughtDate: '2026-06-06', createdAt: now },
   { id: 'ecosystems', subjectId: 'science', name: 'מערכות אקולוגיות', taughtDate: '2026-06-13', createdAt: now },
   { id: 'timeline', subjectId: 'history', name: 'רצף אירועים', taughtDate: '2026-06-10', createdAt: now },
   { id: 'reasoning', subjectId: 'language', name: 'כתיבה מנומקת', taughtDate: '2026-06-10', createdAt: now },
@@ -242,16 +242,31 @@ export const mockQuestionTypes: QuestionType[] = [
 ]
 
 const fractionQuestionTexts = [
-  ['question-fractions-1', 'איזה שבר שווה ל-1/2?', '2/4'],
-  ['question-fractions-2', 'מה המכנה המשותף הקטן ביותר של 1/3 ו-1/6?', '6'],
-  ['question-fractions-3', 'כמה זה 1/4 + 1/4?', '1/2'],
-  ['question-fractions-4', 'איזה שבר גדול יותר: 2/3 או 1/3?', '2/3'],
-  ['question-fractions-5', 'מה התוצאה של 3/4 - 1/4?', '1/2'],
-  ['question-fractions-6', 'איזה שבר שווה ל-3/6?', '1/2'],
-  ['question-fractions-7', 'כמה רבעים יש בשלם אחד?', '4'],
-  ['question-fractions-8', 'מהו 1/2 מתוך 10?', '5'],
-  ['question-fractions-9', 'איזה שבר קטן יותר: 1/5 או 1/2?', '1/5'],
-  ['question-fractions-10', 'מה המכנה המשותף של 1/4 ו-1/8?', '8'],
+  ['question-fractions-1', 'איזה שבר שווה ל-1/2?', '2/4', ['1/3', '2/4', '3/5', '4/7']],
+  ['question-fractions-2', 'מה המכנה המשותף הקטן ביותר של 1/3 ו-1/6?', '6', ['3', '6', '9', '12']],
+  ['question-fractions-3', 'כמה זה 1/4 + 1/4?', '1/2', ['1/4', '1/2', '2/8', '3/4']],
+  ['question-fractions-4', 'איזה שבר גדול יותר: 2/3 או 1/3?', '2/3', ['1/3', '2/3', '1/6', '2/6']],
+  ['question-fractions-5', 'מה התוצאה של 3/4 - 1/4?', '1/2', ['1/4', '1/2', '2/4', '1']],
+  ['question-fractions-6', 'איזה שבר שווה ל-3/6?', '1/2', ['1/2', '2/3', '3/4', '1/6']],
+  ['question-fractions-7', 'כמה רבעים יש בשלם אחד?', '4', ['2', '3', '4', '8']],
+  ['question-fractions-8', 'מהו 1/2 מתוך 10?', '5', ['2', '4', '5', '10']],
+  ['question-fractions-9', 'איזה שבר קטן יותר: 1/5 או 1/2?', '1/5', ['1/5', '1/2', '2/5', '5/2']],
+  ['question-fractions-10', 'מה המכנה המשותף הקטן ביותר של 1/4 ו-1/8?', '8', ['4', '8', '12', '16']],
+  ['question-fractions-11', 'איזה שבר שווה ל-4/8?', '1/2', ['1/4', '1/2', '3/8', '4/6']],
+  ['question-fractions-12', 'כמה זה 2/5 + 1/5?', '3/5', ['2/10', '3/5', '3/10', '1/5']],
+  ['question-fractions-13', 'איזה שבר גדול יותר: 3/4 או 2/4?', '3/4', ['1/4', '2/4', '3/4', '4/4']],
+  ['question-fractions-14', 'מה התוצאה של 5/6 - 2/6?', '3/6', ['2/6', '3/6', '5/12', '7/6']],
+  ['question-fractions-15', 'איזה שבר שווה ל-2/8 לאחר צמצום?', '1/4', ['1/2', '1/4', '2/4', '4/8']],
+  ['question-fractions-16', 'כמה שמיניות יש בחצי?', '4', ['2', '3', '4', '8']],
+  ['question-fractions-17', 'מהו 1/4 מתוך 20?', '5', ['4', '5', '10', '15']],
+  ['question-fractions-18', 'איזה שבר קרוב יותר לשלם: 7/8 או 3/8?', '7/8', ['3/8', '4/8', '7/8', '1/8']],
+  ['question-fractions-19', 'מה המכנה המשותף הקטן ביותר של 1/2 ו-1/5?', '10', ['5', '7', '10', '20']],
+  ['question-fractions-20', 'כמה זה 1/3 + 1/3?', '2/3', ['1/6', '2/3', '2/6', '3/3']],
+  ['question-fractions-21', 'איזה שבר שווה ל-6/9 לאחר צמצום?', '2/3', ['1/3', '2/3', '3/6', '6/3']],
+  ['question-fractions-22', 'מה התוצאה של 4/5 - 1/5?', '3/5', ['1/5', '2/5', '3/5', '5/5']],
+  ['question-fractions-23', 'איזה שבר קטן יותר: 2/7 או 4/7?', '2/7', ['2/7', '4/7', '6/7', '7/7']],
+  ['question-fractions-24', 'כמה חצאים יש בשלושה שלמים?', '6', ['3', '4', '6', '8']],
+  ['question-fractions-25', 'איזה שבר משלים את 3/10 לשלם אחד?', '7/10', ['3/10', '5/10', '7/10', '10/7']],
 ] as const
 
 export const mockQuestions: Question[] = fractionQuestionTexts.map(([id, text, answer], index) => ({
@@ -269,15 +284,14 @@ export const mockQuestions: Question[] = fractionQuestionTexts.map(([id, text, a
 }))
 
 export const mockQuestionOptions: QuestionOption[] = mockQuestions.flatMap((question, index) => {
-  const correct = question.correctAnswer ?? ''
-  const distractors = ['1/3', '3/4', '2/5'].filter((value) => value !== correct).slice(0, 3)
-  const options = [correct, ...distractors]
+  const questionSpec = fractionQuestionTexts.find(([id]) => id === question.id)
+  const options = questionSpec?.[3] ?? []
 
   return options.map((optionText, optionIndex) => ({
     id: `option-${index + 1}-${optionIndex + 1}`,
     questionId: question.id,
     optionText,
-    isCorrect: optionText === correct,
+    isCorrect: optionText === question.correctAnswer,
     sortOrder: optionIndex + 1,
     createdAt: now,
   }))

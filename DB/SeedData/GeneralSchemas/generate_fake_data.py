@@ -104,36 +104,60 @@ HEADERS = {
 }
 
 FIRST_NAMES = [
-    "Noa",
-    "Maya",
-    "Daniel",
-    "Tamar",
-    "Eitan",
-    "Yael",
-    "Amit",
-    "Lior",
-    "Roni",
-    "Shira",
-    "Yonatan",
-    "Hila",
+    "נועה",
+    "מאיה",
+    "דניאל",
+    "תמר",
+    "איתן",
+    "יעל",
+    "עמית",
+    "ליאור",
+    "רוני",
+    "שירה",
+    "יונתן",
+    "הילה",
 ]
 LAST_NAMES = [
-    "Cohen",
-    "Levi",
-    "Mizrahi",
-    "Peretz",
-    "Biton",
-    "Avraham",
-    "Friedman",
-    "Azoulay",
+    "כהן",
+    "לוי",
+    "מזרחי",
+    "פרץ",
+    "ביטון",
+    "אברהם",
+    "פרידמן",
+    "אזולאי",
 ]
 SUBJECT_TOPICS = {
-    "Math": ["Fractions", "Geometry", "Word problems"],
-    "Hebrew": ["Reading comprehension", "Writing structure", "Vocabulary"],
-    "English": ["Vocabulary", "Grammar", "Short reading"],
+    "Math": {
+        "name": "מתמטיקה",
+        "topics": [
+            ("Fractions", "שברים"),
+            ("Geometry", "גיאומטריה"),
+            ("Word problems", "בעיות מילוליות"),
+        ],
+    },
+    "Hebrew": {
+        "name": "עברית",
+        "topics": [
+            ("Reading comprehension", "הבנת הנקרא"),
+            ("Writing structure", "מבנה כתיבה"),
+            ("Vocabulary", "אוצר מילים"),
+        ],
+    },
+    "English": {
+        "name": "אנגלית",
+        "topics": [
+            ("Vocabulary", "אוצר מילים באנגלית"),
+            ("Grammar", "דקדוק באנגלית"),
+            ("Short reading", "קריאה קצרה באנגלית"),
+        ],
+    },
 }
 GRADE_TYPES = ["quiz", "homework", "exam", "project", "participation"]
 ATTENDANCE_STATUSES = ["present", "present", "present", "present", "late", "absent", "excused"]
+SCHOOL_CITIES = ["תל אביב", "חיפה", "ירושלים", "באר שבע"]
+SCHOOL_DISTRICTS = ["מרכז", "צפון", "ירושלים", "דרום"]
+GRADE_LETTERS = {4: "ד", 5: "ה", 6: "ו", 7: "ז", 8: "ח", 9: "ט"}
 
 
 def stable_id(name: str) -> str:
@@ -146,6 +170,11 @@ def timestamp(offset_days: int = 0) -> str:
 
 def slug(value: str) -> str:
     return value.lower().replace(" ", ".").replace("'", "")
+
+
+def class_name(grade: int, school_index: int, class_index: int) -> str:
+    grade_letter = GRADE_LETTERS.get(grade, str(grade))
+    return f"כיתה {grade_letter}-{school_index}{class_index}"
 
 
 def sql_literal(value: Any) -> str:
@@ -206,9 +235,9 @@ def generate_data(
         rows["schools"].append(
             {
                 "id": school_id,
-                "name": f"Insight Demo School {school_index}",
-                "city": ["Tel Aviv", "Haifa", "Jerusalem", "Beer Sheva"][school_index % 4],
-                "district": ["Central", "North", "Jerusalem", "South"][school_index % 4],
+                "name": f"בית ספר הדגמה אינסייט {school_index}",
+                "city": SCHOOL_CITIES[(school_index - 1) % len(SCHOOL_CITIES)],
+                "district": SCHOOL_DISTRICTS[(school_index - 1) % len(SCHOOL_DISTRICTS)],
                 "peripheral_index": rng.randint(3, 8),
                 "created_at": timestamp(),
             }
@@ -223,7 +252,7 @@ def generate_data(
                 {
                     "id": teacher_id,
                     "full_name": name,
-                    "email": f"{slug(name)}.{school_index}@demo-school.example",
+                    "email": f"teacher{school_index:02d}{teacher_index:02d}@demo-school.example",
                     "phone": f"+972-50-{school_index:02d}{teacher_index:05d}",
                     "school_id": school_id,
                     "created_at": timestamp(),
@@ -238,30 +267,30 @@ def generate_data(
                 {
                     "id": class_id,
                     "school_id": school_id,
-                    "name": f"Grade {grade}-{school_index}{class_index}",
+                    "name": class_name(grade, school_index, class_index),
                     "grade": grade,
                     "homeroom_teacher_id": homeroom_teacher_id,
                     "created_at": timestamp(),
                 }
             )
 
-            for subject_index, subject_name in enumerate(SUBJECT_TOPICS, start=1):
+            for subject_index, (subject_key, subject) in enumerate(SUBJECT_TOPICS.items(), start=1):
                 teacher_id = school_teacher_ids[(class_index + subject_index) % len(school_teacher_ids)]
-                teacher_by_class_subject[(class_id, subject_name)] = teacher_id
-                subject_id = stable_id(f"subject:{school_index}:{class_index}:{subject_name}")
+                teacher_by_class_subject[(class_id, subject_key)] = teacher_id
+                subject_id = stable_id(f"subject:{school_index}:{class_index}:{subject_key}")
                 rows["subjects"].append(
                     {
                         "id": subject_id,
-                        "name": subject_name,
+                        "name": subject["name"],
                         "class_id": class_id,
                         "teacher_id": teacher_id,
                         "created_at": timestamp(),
                     }
                 )
 
-                for topic_index, topic_name in enumerate(SUBJECT_TOPICS[subject_name], start=1):
+                for topic_index, (topic_key, topic_name) in enumerate(subject["topics"], start=1):
                     taught_date = BASE_DATE + timedelta(days=(class_index * 7) + (topic_index * 10))
-                    topic_id = stable_id(f"topic:{school_index}:{class_index}:{subject_name}:{topic_name}")
+                    topic_id = stable_id(f"topic:{school_index}:{class_index}:{subject_key}:{topic_key}")
                     rows["topics"].append(
                         {
                             "id": topic_id,
@@ -276,7 +305,8 @@ def generate_data(
                             "id": topic_id,
                             "class_id": class_id,
                             "name": topic_name,
-                            "subject_name": subject_name,
+                            "subject_key": subject_key,
+                            "subject_name": subject["name"],
                             "taught_date": taught_date,
                         }
                     )
@@ -315,8 +345,8 @@ def generate_data(
                             "id": parent_id,
                             "full_name": parent_name,
                             "phone": f"+972-52-{school_index}{class_index}{student_index:02d}{parent_number:03d}",
-                            "email": f"{slug(parent_name)}.{student_index}.{parent_number}@parent.example",
-                            "preferred_language": "he" if parent_number == 1 else "en",
+                            "email": f"parent{school_index:02d}{class_index:02d}{student_index:02d}{parent_number}@parent.example",
+                            "preferred_language": "he",
                             "created_at": timestamp(),
                         }
                     )
@@ -437,7 +467,7 @@ def generate_data(
                         "action_type": "practiced_at_home" if status == "completed" else "dismissed",
                         "status": status,
                         "completed_at": timestamp(3) if status == "completed" else "",
-                        "parent_feedback": "Completed a short practice session at home." if status == "completed" else "Parent dismissed this recommendation.",
+                        "parent_feedback": "בוצע תרגול קצר בבית." if status == "completed" else "ההמלצה סומנה כלא רלוונטית כרגע.",
                         "created_at": timestamp(2),
                     }
                 )
@@ -447,25 +477,25 @@ def generate_data(
 
 def build_grade_note(score: int, topic_name: str) -> str:
     if score < 65:
-        return f"Needs more practice with {topic_name}."
+        return f"נדרש תרגול נוסף בנושא {topic_name}."
     if score >= 90:
-        return f"Strong understanding of {topic_name}."
-    return f"Shows steady progress in {topic_name}."
+        return f"הבנה חזקה בנושא {topic_name}."
+    return f"ניכרת התקדמות יציבה בנושא {topic_name}."
 
 
 def build_parent_summary(student_name: str, risk_level: int, trend: str) -> str:
     if risk_level >= 7:
-        return f"{student_name} may need focused support this week. The recent pattern is {trend}, with evidence from grades and attendance."
+        return f"{student_name} זקוק/ה לתמיכה ממוקדת השבוע. הנתונים מצביעים על קושי לפי ציונים ונוכחות."
     if risk_level <= 3:
-        return f"{student_name} is showing positive learning signs. Continue the current routine and encourage consistent practice."
-    return f"{student_name} is mostly stable. A short review at home can help strengthen recent classroom topics."
+        return f"{student_name} מציג/ה סימני למידה חיוביים. כדאי לשמר את השגרה ולעודד תרגול קצר ועקבי."
+    return f"{student_name} במצב יציב ברוב הנושאים. חזרה קצרה בבית יכולה לחזק את החומר האחרון שנלמד."
 
 
 def build_recommendations(risk_level: int, absence_count: int) -> list[dict[str, Any]]:
     recommendations = [
         {
-            "title": "Review one recent topic at home",
-            "description": "Spend 10 minutes reviewing the most recent class topic and ask the child to explain one example in their own words.",
+            "title": "חזרה קצרה על נושא אחרון בבית",
+            "description": "הקדישו 10 דקות לחזרה על הנושא האחרון ובקשו מהילד/ה להסביר דוגמה אחת במילים שלו/ה.",
             "type": "home_practice",
             "priority": 3,
         }
@@ -473,8 +503,8 @@ def build_recommendations(risk_level: int, absence_count: int) -> list[dict[str,
     if risk_level >= 6:
         recommendations.append(
             {
-                "title": "Schedule a short teacher check-in",
-                "description": "Contact the teacher to understand which classroom skill needs the most support right now.",
+                "title": "שיחה קצרה עם המורה",
+                "description": "כדאי לפנות למורה כדי להבין איזו מיומנות בכיתה דורשת כרגע את התמיכה המשמעותית ביותר.",
                 "type": "teacher_contact",
                 "priority": 1,
             }
@@ -482,8 +512,8 @@ def build_recommendations(risk_level: int, absence_count: int) -> list[dict[str,
     if absence_count >= 2:
         recommendations.append(
             {
-                "title": "Catch up on missed lessons",
-                "description": "Ask for the missed lesson material and complete one catch-up activity before the next class.",
+                "title": "השלמת שיעורים שהוחמצו",
+                "description": "בקשו את החומר מהשיעורים שהוחמצו והשלימו פעילות אחת לפני השיעור הבא.",
                 "type": "attendance_follow_up",
                 "priority": 2,
             }

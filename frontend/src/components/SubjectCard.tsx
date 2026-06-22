@@ -1,4 +1,5 @@
 import { ChevronLeft } from 'lucide-react'
+import { SourceDot } from './SourceDot'
 import { StatusBadge } from './StatusBadge'
 import type { RiskMeta, SubjectProgress } from '../types/insight'
 
@@ -16,7 +17,10 @@ export const SubjectCard = ({ subject, riskMeta, onOpen }: SubjectCardProps) => 
   >
     <div className="flex items-start justify-between gap-4">
       <div className="min-w-0 text-start">
-        <h3 className="text-lg font-extrabold text-slate-950">{subject.name}</h3>
+        <h3 className="inline-flex items-center gap-2 text-lg font-extrabold text-slate-950">
+          {subject.name}
+          <SourceDot source={subject._source} />
+        </h3>
         <p className="mt-2 text-sm leading-6 text-slate-500">{subject.summary}</p>
       </div>
       <StatusBadge

@@ -3,6 +3,7 @@ import { ArrowRight, Loader2, Sparkles } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { AppBackground } from './AppBackground'
 import { BottomNavigation } from './BottomNavigation'
+import { SourceDot } from './SourceDot'
 import { StatusBadge } from './StatusBadge'
 import { useSubjectDetail } from '../hooks/useSubjectDetail'
 
@@ -33,7 +34,10 @@ export const SubjectDetail = () => {
             <ArrowRight className="size-5" aria-hidden="true" />
             חזרה
           </button>
-          <h1 className="truncate text-center text-lg font-black text-slate-950">{detail.name}</h1>
+          <h1 className="flex min-w-0 items-center justify-center gap-2 truncate text-center text-lg font-black text-slate-950">
+            {detail.name}
+            <SourceDot source={detail._source} />
+          </h1>
           <StatusBadge
             riskLevel={detail.riskLevel}
             label={riskMeta.label}
@@ -63,6 +67,7 @@ export const SubjectDetail = () => {
               <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-white/80 px-3 py-1.5 text-xs font-black uppercase tracking-[0.2em] text-[#1A6B5A] shadow-sm">
                 <Sparkles className="size-4" aria-hidden="true" />
                 ✦ ניתוח AI
+                <SourceDot source={detail.aiSummarySource} />
               </div>
               <p className="text-lg font-bold leading-8 text-slate-900">{detail.aiSummary}</p>
 
@@ -75,7 +80,10 @@ export const SubjectDetail = () => {
             </section>
 
             <section className="rounded-3xl border border-white/20 bg-white/70 p-5 text-start shadow-[0_14px_45px_rgba(15,23,42,0.08)] backdrop-blur-md">
-              <h2 className="text-xl font-black text-slate-950">מצב לפי נושא</h2>
+              <h2 className="flex items-center gap-2 text-xl font-black text-slate-950">
+                מצב לפי נושא
+                <SourceDot source={detail.topics[0]?._source} />
+              </h2>
               {detail.topics.length > 0 ? (
                 <div className="mt-4 divide-y divide-slate-100">
                   {detail.topics.map((topic) => {
@@ -106,7 +114,10 @@ export const SubjectDetail = () => {
 
             <section className="rounded-3xl border border-white/20 bg-white/70 p-5 text-start shadow-[0_14px_45px_rgba(15,23,42,0.08)] backdrop-blur-md">
               <div className="flex items-center justify-between gap-4">
-                <h2 className="text-xl font-black text-slate-950">נוכחות</h2>
+                <h2 className="flex items-center gap-2 text-xl font-black text-slate-950">
+                  נוכחות
+                  <SourceDot source={detail.attendance._source} />
+                </h2>
                 <span className="rounded-full bg-white/80 px-3 py-1 text-sm font-black text-[#1A6B5A] shadow-sm">
                   {detail.attendance.percentage}%
                 </span>
@@ -132,7 +143,10 @@ export const SubjectDetail = () => {
 
             {detail.grades.length > 0 ? (
               <section className="rounded-3xl border border-white/20 bg-white/70 p-5 text-start shadow-[0_14px_45px_rgba(15,23,42,0.08)] backdrop-blur-md">
-                <h2 className="text-xl font-black text-slate-950">הערכות אחרונות</h2>
+                <h2 className="flex items-center gap-2 text-xl font-black text-slate-950">
+                  הערכות אחרונות
+                  <SourceDot source={detail.grades[0]?._source} />
+                </h2>
                 <div className="mt-4 overflow-hidden rounded-2xl border border-white/30 bg-white/45">
                   <div className="grid grid-cols-[0.9fr_1.1fr_1fr_0.8fr] gap-2 bg-white/70 px-3 py-3 text-xs font-black text-slate-500">
                     <span>תאריך</span>

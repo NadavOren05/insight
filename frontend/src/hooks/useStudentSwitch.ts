@@ -12,10 +12,12 @@ import {
 import { api } from '../services/api'
 import { yonatanStudent } from '../data/mockData'
 import type { RiskLevel, RiskMeta, Screen, Student, SubjectProgress } from '../types/insight'
+import type { DataSource } from '../types/insight'
 
 interface UseStudentSwitchReturn {
   activeStudent: Student
   aiSummary: string
+  aiSummarySource?: DataSource
   children: Student[]
   currentScreen: Screen
   greeting: string
@@ -55,6 +57,7 @@ const riskMeta: Record<RiskLevel, RiskMeta> = {
 
 export const useStudentSwitch = (): UseStudentSwitchReturn => {
   const [isSwitcherOpen, setIsSwitcherOpen] = useState(false)
+  const [aiSummaryByStudentId, setAiSummaryByStudentId] = useState<Record<string, { text: string; source: DataSource }>>({})
   const children = useAtomValue(childrenAtom)
   const [activeStudentId, setActiveStudentId] = useAtom(activeStudentIdAtom)
   const [currentScreen, setCurrentScreen] = useAtom(currentScreenAtom)
@@ -75,9 +78,11 @@ export const useStudentSwitch = (): UseStudentSwitchReturn => {
   const focusSubject = sortedSubjects[0]
   const missingLesson = focusSubject?.missingLessons[0]
   const aiSummary =
-    focusSubject && missingLesson
+    aiSummaryByStudentId[activeStudent.id]?.text ??
+    (focusSubject && missingLesson
       ? `${activeStudent.name} צריך חיזוק ממוקד ב${focusSubject.name}. הפער המרכזי הוא בנושא ${missingLesson}, וכדאי להשלים אותו לפני המעבר לתרגול מתקדם.`
-      : `${activeStudent.name} מתקדם בצורה יציבה. כדאי לשמר רצף תרגול קצר כדי לזהות פערים מוקדם.`
+      : `${activeStudent.name} מתקדם בצורה יציבה. כדאי לשמר רצף תרגול קצר כדי לזהות פערים מוקדם.`)
+  const aiSummarySource = aiSummaryByStudentId[activeStudent.id]?.source
 
   useEffect(() => {
     if (activeStudent.id.length === 0) {
@@ -96,6 +101,13 @@ export const useStudentSwitch = (): UseStudentSwitchReturn => {
       setProgressByStudentId((currentProgress) => ({
         ...currentProgress,
         [activeStudent.id]: overview.subjects,
+      }))
+      setAiSummaryByStudentId((currentSummaries) => ({
+        ...currentSummaries,
+        [activeStudent.id]: {
+          text: overview.aiSummary.text,
+          source: overview.aiSummary._source,
+        },
       }))
     }
 
@@ -126,6 +138,7 @@ export const useStudentSwitch = (): UseStudentSwitchReturn => {
   return {
     activeStudent,
     aiSummary,
+    aiSummarySource,
     children,
     currentScreen,
     greeting: `שלום, ${parentUser.name} 👋`,

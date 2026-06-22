@@ -2,24 +2,26 @@
 
 ## Endpoints
 
-### POST `/auth/login`
+### POST `/api/auth/login`
 - Request: `{ "identifier": "string" }`
 - Response: parent ID, parent name, auth token, and the parent children list.
 - The frontend expects the token to identify a 90-minute app session.
+- Lookup must check both `parents.full_name` and `parents.phone`, then return children through `student_parents`.
 
-### GET `/students/:studentId/overview`
+### GET `/api/students/:studentId/overview`
 - Returns the Home overview for a student.
 - Response includes student metadata, AI summary, and subject summaries sorted client-side by risk.
 - Each subject summary must include subject ID, display name, risk level, short human-readable summary, and missing lesson/topic hints.
+- Subjects are reached through the student's `class_id` and topic-linked grades/attendance.
 
-### GET `/students/:studentId/subjects/:subjectId`
+### GET `/api/students/:studentId/subject/:subjectId`
 - Returns the Subject Detail conversation data.
 - Response includes subject metadata, AI summary, topic status rows, attendance correlation data, and recent grades.
-- Grades must include score and class average so the client can color score pills by gap.
+- Grades and attendance must be joined through `topic_id`; topics connect to subjects through `topics.subject_id`.
 
-### POST `/students/:studentId/practice`
-- Request: `{ "topicId": "string" }`
-- Returns a generated 3-tab practice lesson:
+### POST `/api/generate-lesson`
+- Request: `{ "studentId": "string", "topicId": "string", "difficultyLevelId"?: "string", "recommendationId"?: "string" }`
+- Creates a generated exam and returns the current frontend-compatible 3-tab practice lesson:
   - `lessonExplanation`
   - `practiceQuestions`
   - `parentPedagogicalGuide`
@@ -32,8 +34,9 @@ Required attendance fields:
 - `student_id`
 - `date`
 - `topic_id`
-- `subject_id`
 - absence status or attendance status
+
+Do not duplicate `subject_id` on `attendance` or `grades`; the subject is derived from `attendance.topic_id -> topics.subject_id` and `grades.topic_id -> topics.subject_id`.
 
 ## AI Recommendation Caching
 
@@ -49,3 +52,20 @@ Regenerate when:
 - `generated_at` is older than 24 hours;
 - relevant source data changed;
 - the requested recommendation type or scope changed.
+
+## Hybrid Question Generation
+
+Practice starts as a generated exam, not a free-form lesson.
+
+Flow:
+1. Resolve the target `topic_id` and requested `difficulty_level_id` (`medium` is the default).
+2. Query active rows in `questions` for the topic and difficulty.
+3. Load options from `question_options`.
+4. If enough questions exist, select from the DB and skip AI.
+5. If inventory is insufficient, call Claude only for the missing count and require strict JSON matching the `questions` and `question_options` fields.
+6. Persist generated questions with `source = 'ai_generated'` and save their options for reuse.
+7. Insert `generated_exams` with `student_id`, optional `recommendation_id`, `target_topic_id`, title, and generation reason.
+8. Insert selected question links into `exam_questions`.
+9. If practice was launched from a recommendation, update the matching `parent_actions.status` to `in_progress`.
+
+This keeps generated practice auditable and reusable. Claude is a fallback for inventory gaps, not the primary source every time a parent opens practice.

@@ -1,10 +1,11 @@
 import { useStudentSwitch } from './useStudentSwitch'
-import type { RiskLevel, RiskMeta, Screen, Student, SubjectProgress } from '../types/insight'
+import type { DataSource, RiskLevel, RiskMeta, Screen, Student, SubjectProgress } from '../types/insight'
 
 interface UseHomeScreenReturn {
   greeting: string
   student: Student
   aiSummary: string
+  aiSummarySource?: DataSource
   sortedSubjects: SubjectProgress[]
   currentScreen: Screen
   hasMultipleChildren: boolean
@@ -22,6 +23,7 @@ export const useHomeScreen = (): UseHomeScreenReturn => {
   const {
     activeStudent,
     aiSummary,
+    aiSummarySource,
     closeSwitcher,
     currentScreen,
     getRiskMeta,
@@ -40,6 +42,7 @@ export const useHomeScreen = (): UseHomeScreenReturn => {
     greeting,
     student: activeStudent,
     aiSummary,
+    aiSummarySource,
     sortedSubjects,
     currentScreen,
     hasMultipleChildren,

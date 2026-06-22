@@ -2,8 +2,7 @@ import Anthropic from '@anthropic-ai/sdk'
 import { z } from 'zod'
 import { env } from '../lib/env.js'
 import { studentRepository, type StudentRepository } from '../repositories/studentRepository.js'
-import type { GeneratedLessonResponse } from '../types/api.js'
-import type { RiskLevel, StudentAIAnalysis, TopicStatus } from '../types/database.js'
+import type { StudentAIAnalysis } from '../types/database.js'
 
 const getAnthropic = (): Anthropic =>
   new Anthropic({
@@ -11,25 +10,16 @@ const getAnthropic = (): Anthropic =>
   })
 
 const analysisSchema = z.object({
-  summary: z.string(),
-  riskLevel: z.enum(['red', 'yellow', 'green']),
-  topics: z.array(
-    z.object({
-      topicId: z.string(),
-      status: z.enum(['needs-support', 'medium', 'strong']),
-      explanation: z.string().nullable(),
-    }),
-  ),
+  parentSummary: z.string(),
+  riskLevel: z.number().int().min(1).max(10).nullable(),
+  trend: z.string().nullable(),
+  attendanceFlag: z.boolean(),
 })
-
-type ClaudeAnalysis = z.infer<typeof analysisSchema>
-
-const fallbackRiskLevel = (analysis: ClaudeAnalysis): RiskLevel => analysis.riskLevel
 
 const buildAnalysisPrompt = (studentId: string, subjectId: string): string =>
   [
     'You are Insight, an academic assistant for parents.',
-    'Return only valid JSON matching: { "summary": string, "riskLevel": "red" | "yellow" | "green", "topics": [{ "topicId": string, "status": "needs-support" | "medium" | "strong", "explanation": string | null }] }.',
+    'Return only valid JSON matching: { "parentSummary": string, "riskLevel": number | null, "trend": string | null, "attendanceFlag": boolean }.',
     `Analyze student ${studentId} in subject ${subjectId}. Explain why the child is struggling and how the parent should act tonight.`,
   ].join('\n')
 
@@ -52,7 +42,7 @@ export class AIService {
     studentId: string,
     subjectId: string,
   ): Promise<StudentAIAnalysis> {
-    const cachedAnalysis = await this.repository.findAnalysisForToday(studentId, subjectId)
+    const cachedAnalysis = await this.repository.findAnalysisForToday(studentId)
 
     if (cachedAnalysis) {
       return cachedAnalysis
@@ -61,10 +51,10 @@ export class AIService {
     if (!env.USE_REAL_DB) {
       return this.repository.saveAnalysis({
         studentId,
-        subjectId,
-        summary: 'ניתוח mock מצביע על צורך בתרגול קצר וממוקד לפי נושא.',
-        riskLevel: 'yellow',
-        rawResponse: { source: 'mock' },
+        parentSummary: 'ניתוח mock מצביע על צורך בתרגול קצר וממוקד לפי נושא.',
+        riskLevel: 5,
+        trend: 'stable',
+        attendanceFlag: false,
       })
     }
 
@@ -88,53 +78,13 @@ export class AIService {
     const rawText = firstBlock && firstBlock.type === 'text' ? firstBlock.text : parseClaudeText(message.content)
     const parsedResponse = analysisSchema.parse(JSON.parse(rawText) as unknown)
 
-    const analysis = await this.repository.saveAnalysis({
+    return this.repository.saveAnalysis({
       studentId,
-      subjectId,
-      summary: parsedResponse.summary,
-      riskLevel: fallbackRiskLevel(parsedResponse),
-      rawResponse: parsedResponse,
+      parentSummary: parsedResponse.parentSummary,
+      riskLevel: parsedResponse.riskLevel,
+      trend: parsedResponse.trend,
+      attendanceFlag: parsedResponse.attendanceFlag,
     })
-
-    await this.repository.saveAnalysisTopics(
-      parsedResponse.topics.map((topic) => ({
-        analysisId: analysis.id,
-        topicId: topic.topicId,
-        status: topic.status as TopicStatus,
-        explanation: topic.explanation,
-      })),
-    )
-
-    return analysis
-  }
-
-  public async generateLesson(studentId: string, topicId: string): Promise<GeneratedLessonResponse> {
-    return {
-      studentId,
-      topicId,
-      lessonExplanation: {
-        title: 'הסבר קצר לפני תרגול',
-        steps: [
-          'להתחיל בדוגמה אחת פשוטה.',
-          'לבקש מהילד להסביר את הצעד הראשון.',
-          'לעצור אחרי הצלחה קטנה כדי לשמר ביטחון.',
-        ],
-        example: `תרגול ממוקד בנושא ${topicId}`,
-      },
-      practiceQuestions: [
-        {
-          id: 'question-1',
-          prompt: `שאלה קצרה בנושא ${topicId}`,
-          answer: 'תשובה לדוגמה',
-          hint: 'חפש את מילת המפתח בשאלה.',
-        },
-      ],
-      parentPedagogicalGuide: {
-        goal: 'לתת להורה דרך פעולה קצרה וברורה לערב הקרוב.',
-        coachingTips: ['לשאול לפני שמתקנים', 'לתת חיזוק על דרך החשיבה'],
-        stopWhen: 'לעצור אחרי 10 דקות או אם מופיע תסכול.',
-      },
-    }
   }
 }
 

@@ -14,16 +14,19 @@ import { api } from '../services/api'
 import { createExpiryTimestamp, persistSession } from '../utils/session'
 
 interface UseLoginScreenReturn {
-  credential: string
+  fullName: string
+  phone: string
   isLoading: boolean
-  handleCredentialChange: (event: ChangeEvent<HTMLInputElement>) => void
+  handleFullNameChange: (event: ChangeEvent<HTMLInputElement>) => void
+  handlePhoneChange: (event: ChangeEvent<HTMLInputElement>) => void
   handleSubmit: (event: FormEvent<HTMLFormElement>) => void
 }
 
 const LOGIN_DELAY_MS = 900
 
 export const useLoginScreen = (): UseLoginScreenReturn => {
-  const [credential, setCredential] = useState('')
+  const [fullName, setFullName] = useState('')
+  const [phone, setPhone] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const setIsAuthenticated = useSetAtom(isAuthenticatedAtom)
   const setAuthToken = useSetAtom(authTokenAtom)
@@ -33,30 +36,38 @@ export const useLoginScreen = (): UseLoginScreenReturn => {
   const setActiveStudentId = useSetAtom(activeStudentIdAtom)
   const navigate = useNavigate()
 
-  const handleCredentialChange = (event: ChangeEvent<HTMLInputElement>) => {
-    setCredential(event.target.value)
+  const handleFullNameChange = (event: ChangeEvent<HTMLInputElement>) => {
+    setFullName(event.target.value)
+  }
+
+  const handlePhoneChange = (event: ChangeEvent<HTMLInputElement>) => {
+    setPhone(event.target.value)
   }
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
 
-    if (isLoading) {
+    const trimmedFullName = fullName.trim()
+    const trimmedPhone = phone.trim()
+
+    if (isLoading || trimmedFullName.length === 0 || trimmedPhone.length === 0) {
       return
     }
 
     const loginUser = async () => {
       setIsLoading(true)
 
-      const loginResponse = await api.auth.login(credential)
+      const loginResponse = await api.auth.login(trimmedFullName, trimmedPhone)
       const expiryTimestamp = createExpiryTimestamp()
       persistSession(loginResponse, expiryTimestamp)
 
       setAuthToken(loginResponse.authToken)
       setSessionExpiry(expiryTimestamp)
       setParentUser({
+        _source: loginResponse._source,
         id: loginResponse.parentId,
         name: loginResponse.parentName,
-        phone: credential.trim(),
+        phone: trimmedPhone,
       })
       setChildren(loginResponse.children)
       setIsAuthenticated(true)
@@ -79,9 +90,11 @@ export const useLoginScreen = (): UseLoginScreenReturn => {
   }
 
   return {
-    credential,
+    fullName,
+    phone,
     isLoading,
-    handleCredentialChange,
+    handleFullNameChange,
+    handlePhoneChange,
     handleSubmit,
   }
 }

@@ -4,7 +4,8 @@ import { AppBackground } from './AppBackground'
 import { useLoginScreen } from '../hooks/useLoginScreen'
 
 export const LoginScreen = () => {
-  const { credential, isLoading, handleCredentialChange, handleSubmit } = useLoginScreen()
+  const { fullName, phone, isLoading, handleFullNameChange, handlePhoneChange, handleSubmit } =
+    useLoginScreen()
 
   return (
     <AppBackground className="px-5 py-8">
@@ -28,13 +29,28 @@ export const LoginScreen = () => {
           <form className="space-y-5" onSubmit={handleSubmit}>
             <label className="block text-start">
               <span className="mb-2 block text-sm font-semibold text-slate-700">
-                שם או טלפון
+                שם מלא של ההורה
               </span>
               <input
                 type="text"
-                value={credential}
-                onChange={handleCredentialChange}
+                value={fullName}
+                onChange={handleFullNameChange}
+                required
                 placeholder="לדוגמה: נדב"
+                className="h-14 w-full rounded-2xl border border-white/30 bg-white/65 px-4 text-base text-slate-950 outline-none backdrop-blur-md transition placeholder:text-slate-400 focus:border-[#1A6B5A] focus:bg-white/85 focus:ring-4 focus:ring-[#1A6B5A]/15"
+              />
+            </label>
+
+            <label className="block text-start">
+              <span className="mb-2 block text-sm font-semibold text-slate-700">
+                מספר טלפון
+              </span>
+              <input
+                type="tel"
+                value={phone}
+                onChange={handlePhoneChange}
+                required
+                placeholder="050-1111111"
                 className="h-14 w-full rounded-2xl border border-white/30 bg-white/65 px-4 text-base text-slate-950 outline-none backdrop-blur-md transition placeholder:text-slate-400 focus:border-[#1A6B5A] focus:bg-white/85 focus:ring-4 focus:ring-[#1A6B5A]/15"
               />
             </label>

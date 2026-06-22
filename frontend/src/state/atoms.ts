@@ -22,6 +22,7 @@ const hasValidStoredSession =
 export const parentUserAtom = atom<ParentUser>(
   hasValidStoredSession
     ? {
+        _source: storedSession.parentSource,
         id: storedSession.parentId,
         name: storedSession.parentName,
         phone: '',

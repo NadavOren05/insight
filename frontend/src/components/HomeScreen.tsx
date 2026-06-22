@@ -3,6 +3,7 @@ import { Menu, Sparkles, UserRound } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { AppBackground } from './AppBackground'
 import { BottomNavigation } from './BottomNavigation'
+import { SourceDot } from './SourceDot'
 import { SubjectCard } from './SubjectCard'
 import { useHomeScreen } from '../hooks/useHomeScreen'
 
@@ -11,6 +12,7 @@ export const HomeScreen = () => {
     greeting,
     student,
     aiSummary,
+    aiSummarySource,
     closeSwitcher,
     hasMultipleChildren,
     isSwitcherOpen,
@@ -49,8 +51,9 @@ export const HomeScreen = () => {
                 <h1 className="mt-4 text-3xl font-black leading-tight text-slate-950 sm:text-4xl">
                   {greeting}
                 </h1>
-                <p className="mt-2 text-base font-medium text-slate-600">
+                <p className="mt-2 flex items-center gap-2 text-base font-medium text-slate-600">
                   {student.name} · {student.grade}
+                  <SourceDot source={student._source} />
                 </p>
               </div>
 
@@ -107,6 +110,7 @@ export const HomeScreen = () => {
               <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-white/80 px-3 py-1.5 text-xs font-black text-[#1A6B5A] shadow-sm">
                 <Sparkles className="size-4" aria-hidden="true" />
                 ✦ AI Insight
+                <SourceDot source={aiSummarySource} />
               </div>
               <p className="text-lg font-bold leading-8 text-slate-900">{aiSummary}</p>
             </section>

@@ -27,10 +27,10 @@ const request = async <ResponseBody>(
   return (await response.json()) as ResponseBody
 }
 
-const login = async (identifier: string): Promise<LoginResponse> => {
+const login = async (fullName: string, phone: string): Promise<LoginResponse> => {
   const response = await request<Omit<LoginResponse, 'authToken'>>('/auth/login', {
     method: 'POST',
-    body: JSON.stringify({ identifier }),
+    body: JSON.stringify({ fullName, phone }),
   })
 
   return {
@@ -42,21 +42,27 @@ const login = async (identifier: string): Promise<LoginResponse> => {
 const getOverview = async (studentId: string): Promise<OverviewResponse> => {
   const response = await request<{
     student: {
+      _source: OverviewResponse['_source']
       id: string
       name: string
       grade: string
     }
-    aiSummary: string
+    aiSummary: {
+      _source: OverviewResponse['aiSummary']['_source']
+      text: string
+    }
     subjects: OverviewResponse['subjects']
   }>(`/students/${studentId}/overview`)
 
   return {
+    _source: response.student._source,
     studentId: response.student.id,
     studentName: response.student.name,
     grade: response.student.grade,
     aiSummary: {
+      _source: response.aiSummary._source,
       tag: '✦ AI Insight',
-      text: response.aiSummary,
+      text: response.aiSummary.text,
     },
     subjects: response.subjects,
   }
@@ -65,8 +71,20 @@ const getOverview = async (studentId: string): Promise<OverviewResponse> => {
 const getSubjectDetail = async (
   studentId: string,
   subjectId: string,
-): Promise<SubjectDetailResponse> =>
-  request<SubjectDetailResponse>(`/students/${studentId}/subject/${subjectId}`)
+): Promise<SubjectDetailResponse> => {
+  const response = await request<Omit<SubjectDetailResponse, 'aiSummary' | 'aiSummarySource'> & {
+    aiSummary: {
+      _source: SubjectDetailResponse['aiSummarySource']
+      text: string
+    }
+  }>(`/students/${studentId}/subject/${subjectId}`)
+
+  return {
+    ...response,
+    aiSummary: response.aiSummary.text,
+    aiSummarySource: response.aiSummary._source,
+  }
+}
 
 const generateLesson = async (
   studentId: string,

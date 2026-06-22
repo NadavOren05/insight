@@ -1,5 +1,6 @@
 import type {
   AttendanceWithTopic,
+  DataSource,
   GradeWithTopic,
   RiskLevel,
   Student,
@@ -8,19 +9,23 @@ import type {
   TopicStatus,
 } from './database.js'
 
-export interface LoginChild {
+export interface ApiSourceMeta {
+  _source: DataSource
+}
+
+export interface LoginChild extends ApiSourceMeta {
   id: string
   name: string
   grade: string
 }
 
-export interface LoginResponse {
+export interface LoginResponse extends ApiSourceMeta {
   parentId: string
   parentName: string
   children: LoginChild[]
 }
 
-export interface SubjectOverview {
+export interface SubjectOverview extends ApiSourceMeta {
   id: string
   name: string
   riskLevel: RiskLevel
@@ -29,22 +34,24 @@ export interface SubjectOverview {
 }
 
 export interface StudentOverviewResponse {
-  student: {
+  student: ApiSourceMeta & {
     id: string
     name: string
     grade: string
   }
-  aiSummary: string
+  aiSummary: ApiSourceMeta & {
+    text: string
+  }
   subjects: SubjectOverview[]
 }
 
-export interface SubjectTopicStatus {
+export interface SubjectTopicStatus extends ApiSourceMeta {
   id: string
   name: string
   status: TopicStatus
 }
 
-export interface SubjectDetailGrade {
+export interface SubjectDetailGrade extends ApiSourceMeta {
   id: string
   date: string
   topic: string
@@ -53,21 +60,23 @@ export interface SubjectDetailGrade {
   classAvg: number
 }
 
-export interface RelevantAbsence {
+export interface RelevantAbsence extends ApiSourceMeta {
   id: string
   date: string
   topicId: string
   topicName: string
 }
 
-export interface SubjectDetailResponse {
+export interface SubjectDetailResponse extends ApiSourceMeta {
   studentId: string
   subjectId: string
   name: string
   riskLevel: RiskLevel
-  aiSummary: string
+  aiSummary: ApiSourceMeta & {
+    text: string
+  }
   topics: SubjectTopicStatus[]
-  attendance: {
+  attendance: ApiSourceMeta & {
     percentage: number
     attendanceFlag: boolean
     relevantAbsences: RelevantAbsence[]
@@ -81,7 +90,7 @@ export interface LessonExplanation {
   example: string
 }
 
-export interface PracticeQuestion {
+export interface PracticeQuestion extends ApiSourceMeta {
   id: string
   prompt: string
   answer: string

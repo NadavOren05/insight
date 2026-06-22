@@ -9,14 +9,38 @@ import type {
 } from '../types/api.js'
 import type { AttendanceWithTopic, GradeWithTopic, RiskLevel } from '../types/database.js'
 
-const riskFromGrades = (grades: GradeWithTopic[]): RiskLevel => {
-  const gaps = grades.map((grade) => grade.score - (grade.classAverage ?? grade.score))
+const CLASS_AVERAGE_PERCENT = 80
 
-  if (gaps.some((gap) => gap <= -10)) {
+const sourceFromItems = (items: Array<{ _source?: 'database' | 'mock' }>, fallback: 'database' | 'mock'): 'database' | 'mock' =>
+  items.some((item) => item._source === 'database') ? 'database' : fallback
+
+const gradePercent = (grade: GradeWithTopic): number =>
+  grade.maxScore === 0 ? 0 : Math.round((grade.score / grade.maxScore) * 100)
+
+const riskFromAnalysisScore = (riskLevel: number | null): RiskLevel | null => {
+  if (riskLevel === null) {
+    return null
+  }
+
+  if (riskLevel >= 7) {
     return 'red'
   }
 
-  if (gaps.some((gap) => gap < -3)) {
+  if (riskLevel >= 4) {
+    return 'yellow'
+  }
+
+  return 'green'
+}
+
+const riskFromGrades = (grades: GradeWithTopic[]): RiskLevel => {
+  const percentages = grades.map(gradePercent)
+
+  if (percentages.some((score) => score < 70)) {
+    return 'red'
+  }
+
+  if (percentages.some((score) => score < 80)) {
     return 'yellow'
   }
 
@@ -26,9 +50,8 @@ const riskFromGrades = (grades: GradeWithTopic[]): RiskLevel => {
 const weakTopicIdsFromGrades = (grades: GradeWithTopic[]): Set<string> =>
   new Set(
     grades
-      .filter((grade) => grade.topicId !== null)
-      .filter((grade) => grade.score - (grade.classAverage ?? grade.score) <= -3)
-      .map((grade) => grade.topicId ?? ''),
+      .filter((grade) => gradePercent(grade) < 80)
+      .map((grade) => grade.topicId),
   )
 
 const relevantAbsencesFromAttendance = (
@@ -36,13 +59,14 @@ const relevantAbsencesFromAttendance = (
   weakTopicIds?: Set<string>,
 ): RelevantAbsence[] =>
   attendance
-    .filter((item) => !item.isPresent && item.topicId !== null && item.topicName !== null)
-    .filter((item) => (weakTopicIds ? weakTopicIds.has(item.topicId ?? '') : true))
+    .filter((item) => item.status !== 'present' && item.topicName !== null)
+    .filter((item) => (weakTopicIds ? weakTopicIds.has(item.topicId) : true))
     .slice(0, 4)
     .map((item) => ({
+      _source: item._source ?? 'mock',
       id: item.id,
-      date: item.lessonDate,
-      topicId: item.topicId ?? '',
+      date: item.date,
+      topicId: item.topicId,
       topicName: item.topicName ?? '',
     }))
 
@@ -66,6 +90,7 @@ export class StudentService {
       throw new AppError('Student was not found', 404)
     }
 
+    const classRow = await this.repository.findClassById(student.classId)
     const subjects = await this.repository.listSubjectsForStudent(studentId)
     const subjectSummaries = await Promise.all(
       subjects.map(async (subject): Promise<SubjectOverview> => {
@@ -73,27 +98,39 @@ export class StudentService {
         const attendance = await this.repository.listAttendanceForSubject(studentId, subject.id)
         const weakTopicIds = weakTopicIdsFromGrades(grades)
         const relevantAbsences = relevantAbsencesFromAttendance(attendance, weakTopicIds)
+        const subjectRisk = riskFromGrades(grades)
 
         return {
+          _source: subject._source ?? sourceFromItems([...grades, ...attendance], 'mock'),
           id: subject.id,
           name: subject.name,
-          riskLevel: riskFromGrades(grades),
+          riskLevel: subjectRisk,
           summary:
             relevantAbsences.length > 0
               ? `ייתכן שיש קשר בין החמצות בנושא ${relevantAbsences[0]?.topicName} לבין הקושי הנוכחי.`
-              : 'הנתונים האחרונים יציבים, מומלץ להמשיך במעקב קצר.',
+              : subjectRisk === 'green'
+                ? 'הנתונים האחרונים חזקים, כדאי לשמר מומנטום עם אתגר קצר.'
+                : 'הנתונים האחרונים מצביעים על צורך בתרגול קצר וממוקד.',
           missingLessons: Array.from(new Set(relevantAbsences.map((absence) => absence.topicName))),
         }
       }),
     )
+    const analysis = await this.repository.findAnalysisForToday(studentId)
 
     return {
       student: {
+        _source: student._source ?? 'mock',
         id: student.id,
         name: student.fullName,
-        grade: student.gradeLevel,
+        grade: classRow ? `כיתה ${classRow.grade}` : '',
       },
-      aiSummary: subjectSummaries[0]?.summary ?? 'טרם נאספו מספיק נתונים לניתוח מלא.',
+      aiSummary: {
+        _source: analysis?._source ?? 'mock',
+        text:
+          analysis?.parentSummary ??
+          subjectSummaries.find((summary) => summary.riskLevel === 'red')?.summary ??
+          'טרם נאספו מספיק נתונים לניתוח מלא.',
+      },
       subjects: subjectSummaries,
     }
   }
@@ -117,38 +154,50 @@ export class StudentService {
     const weakTopicIds = weakTopicIdsFromGrades(grades)
     const relevantAbsences = relevantAbsencesFromAttendance(attendance, weakTopicIds)
     const relevantTopicIds = new Set([
-      ...grades.flatMap((grade) => (grade.topicId ? [grade.topicId] : [])),
-      ...attendance.flatMap((item) => (item.topicId ? [item.topicId] : [])),
+      ...grades.map((grade) => grade.topicId),
+      ...attendance.map((item) => item.topicId),
     ])
-    const presentCount = attendance.filter((item) => item.isPresent).length
+    const presentCount = attendance.filter((item) => item.status === 'present').length
     const attendancePercentage =
       attendance.length === 0 ? 100 : Math.round((presentCount / attendance.length) * 100)
+    const derivedRisk = riskFromGrades(grades)
 
     return {
+      _source: subject._source ?? 'mock',
       studentId,
       subjectId,
       name: subject.name,
-      riskLevel: analysis.riskLevel,
-      aiSummary: analysis.summary,
+      riskLevel: riskFromAnalysisScore(analysis.riskLevel) ?? derivedRisk,
+      aiSummary: {
+        _source: analysis._source ?? 'mock',
+        text:
+          analysis.parentSummary ??
+          (relevantAbsences.length > 0
+            ? `יש קושי בנושא ${relevantAbsences[0]?.topicName}, והחמצות באותו נושא מחזקות את ההשערה שכדאי להשלים אותו קודם.`
+            : 'הנתונים מצביעים על תמונה יציבה יחסית. כדאי לבחור פעולה קצרה אחת להערב.'),
+      },
       topics: topics
         .filter((topic) => relevantTopicIds.has(topic.id))
         .map((topic) => ({
+          _source: topic._source ?? 'mock',
           id: topic.id,
           name: topic.name,
           status: weakTopicIds.has(topic.id) ? 'needs-support' : 'strong',
         })),
       attendance: {
+        _source: sourceFromItems(attendance, 'mock'),
         percentage: attendancePercentage,
         attendanceFlag: relevantAbsences.length > 0,
         relevantAbsences,
       },
       grades: grades.map((grade) => ({
+        _source: grade._source ?? 'mock',
         id: grade.id,
-        date: grade.assessedAt,
+        date: grade.date,
         topic: grade.topicName ?? 'כללי',
-        type: grade.assessmentType,
-        score: grade.score,
-        classAvg: grade.classAverage ?? grade.score,
+        type: grade.type,
+        score: gradePercent(grade),
+        classAvg: CLASS_AVERAGE_PERCENT,
       })),
     }
   }

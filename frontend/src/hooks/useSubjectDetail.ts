@@ -167,10 +167,13 @@ export const useSubjectDetail = (): UseSubjectDetailReturn => {
           [resolvedSubjectId]: {
             id: response.subjectId,
             name: response.name,
+            _source: response._source,
             riskLevel: response.riskLevel,
             aiSummary: response.aiSummary,
+            aiSummarySource: response.aiSummarySource,
             topics: response.topics,
             attendance: {
+              _source: response.attendance._source,
               percentage: response.attendance.percentage,
               attendanceFlag: response.attendance.attendanceFlag,
               relevantAbsences: response.attendance.relevantAbsences,

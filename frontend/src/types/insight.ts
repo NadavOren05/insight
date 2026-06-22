@@ -1,18 +1,24 @@
 export type RiskLevel = 'red' | 'yellow' | 'green'
 
+export type DataSource = 'database' | 'mock'
+
+export interface SourceMeta {
+  _source?: DataSource
+}
+
 export type Screen = 'login' | 'child-select' | 'home' | 'subject-detail' | 'profile'
 
 export type TopicStatus = 'needs-support' | 'medium' | 'strong'
 
 export type ScoreTone = 'red' | 'orange' | 'green'
 
-export interface ParentUser {
+export interface ParentUser extends SourceMeta {
   id: string
   name: string
   phone: string
 }
 
-export interface Student {
+export interface Student extends SourceMeta {
   id: string
   name: string
   grade: string
@@ -22,7 +28,7 @@ export type SubjectProgressByStudentId = Record<string, SubjectProgress[]>
 
 export type SubjectDataByStudentId = Record<string, Record<string, SubjectData>>
 
-export interface SubjectProgress {
+export interface SubjectProgress extends SourceMeta {
   id: string
   name: string
   riskLevel: RiskLevel
@@ -35,25 +41,25 @@ export interface RiskMeta {
   className: string
 }
 
-export interface Topic {
+export interface Topic extends SourceMeta {
   id: string
   name: string
   status: TopicStatus
 }
 
-export interface RelevantAbsence {
+export interface RelevantAbsence extends SourceMeta {
   id: string
   date: string
   topicName: string
 }
 
-export interface Attendance {
+export interface Attendance extends SourceMeta {
   percentage: number
   attendanceFlag: boolean
   relevantAbsences: RelevantAbsence[]
 }
 
-export interface Grade {
+export interface Grade extends SourceMeta {
   id: string
   date: string
   topic: string
@@ -62,11 +68,12 @@ export interface Grade {
   classAvg: number
 }
 
-export interface SubjectData {
+export interface SubjectData extends SourceMeta {
   id: string
   name: string
   riskLevel: RiskLevel
   aiSummary: string
+  aiSummarySource?: DataSource
   topics: Topic[]
   attendance: Attendance
   grades: Grade[]

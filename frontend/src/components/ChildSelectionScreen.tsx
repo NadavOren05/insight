@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion'
 import { GraduationCap } from 'lucide-react'
 import { AppBackground } from './AppBackground'
+import { SourceDot } from './SourceDot'
 import { useStudentSwitch } from '../hooks/useStudentSwitch'
 
 const getInitial = (name: string) => name.charAt(0)
@@ -43,7 +44,10 @@ export const ChildSelectionScreen = () => {
                 {getInitial(child.name)}
               </span>
               <span className="min-w-0 flex-1">
-                <span className="block text-xl font-black text-slate-950">{child.name}</span>
+                <span className="flex items-center gap-2 text-xl font-black text-slate-950">
+                  {child.name}
+                  <SourceDot source={child._source} />
+                </span>
                 <span className="mt-1 flex items-center gap-2 text-sm font-semibold text-slate-500">
                   <GraduationCap className="size-4" aria-hidden="true" />
                   {child.grade}

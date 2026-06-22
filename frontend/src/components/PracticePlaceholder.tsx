@@ -3,6 +3,7 @@ import { useAtomValue } from 'jotai'
 import { useNavigate, useParams } from 'react-router-dom'
 import { ArrowRight, Loader2 } from 'lucide-react'
 import { AppBackground } from './AppBackground'
+import { SourceDot } from './SourceDot'
 import { api } from '../services/api'
 import { activeStudentIdAtom } from '../state/atoms'
 import type { GeneratedLessonResponse } from '../types/api'
@@ -65,7 +66,10 @@ export const PracticePlaceholder = () => {
               </div>
 
               <div className="rounded-2xl bg-white/60 p-4">
-                <h2 className="text-lg font-black text-slate-900">שאלות תרגול</h2>
+                <h2 className="flex items-center gap-2 text-lg font-black text-slate-900">
+                  שאלות תרגול
+                  <SourceDot source={lesson.practiceQuestions[0]?._source} />
+                </h2>
                 <p className="mt-2 text-sm font-bold text-slate-600">
                   {lesson.practiceQuestions.length} שאלות מוכנות
                 </p>

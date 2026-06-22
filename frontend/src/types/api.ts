@@ -1,24 +1,28 @@
-import type { RiskLevel, TopicStatus } from './insight'
+import type { DataSource, RiskLevel, TopicStatus } from './insight'
 
-export interface ApiChild {
+export interface ApiSourceMeta {
+  _source: DataSource
+}
+
+export interface ApiChild extends ApiSourceMeta {
   id: string
   name: string
   grade: string
 }
 
-export interface LoginResponse {
+export interface LoginResponse extends ApiSourceMeta {
   authToken: string
   parentId: string
   parentName: string
   children: ApiChild[]
 }
 
-export interface OverviewAiSummary {
+export interface OverviewAiSummary extends ApiSourceMeta {
   tag: string
   text: string
 }
 
-export interface OverviewSubjectSummary {
+export interface OverviewSubjectSummary extends ApiSourceMeta {
   id: string
   name: string
   riskLevel: RiskLevel
@@ -30,30 +34,31 @@ export interface OverviewResponse {
   studentId: string
   studentName: string
   grade: string
+  _source: DataSource
   aiSummary: OverviewAiSummary
   subjects: OverviewSubjectSummary[]
 }
 
-export interface ApiTopic {
+export interface ApiTopic extends ApiSourceMeta {
   id: string
   name: string
   status: TopicStatus
 }
 
-export interface ApiRelevantAbsence {
+export interface ApiRelevantAbsence extends ApiSourceMeta {
   id: string
   date: string
   topicId: string
   topicName: string
 }
 
-export interface ApiAttendance {
+export interface ApiAttendance extends ApiSourceMeta {
   percentage: number
   attendanceFlag: boolean
   relevantAbsences: ApiRelevantAbsence[]
 }
 
-export interface ApiGrade {
+export interface ApiGrade extends ApiSourceMeta {
   id: string
   date: string
   topic: string
@@ -62,12 +67,13 @@ export interface ApiGrade {
   classAvg: number
 }
 
-export interface SubjectDetailResponse {
+export interface SubjectDetailResponse extends ApiSourceMeta {
   studentId: string
   subjectId: string
   name: string
   riskLevel: RiskLevel
   aiSummary: string
+  aiSummarySource: DataSource
   topics: ApiTopic[]
   attendance: ApiAttendance
   grades: ApiGrade[]
@@ -79,7 +85,7 @@ export interface LessonExplanation {
   example: string
 }
 
-export interface PracticeQuestion {
+export interface PracticeQuestion extends ApiSourceMeta {
   id: string
   prompt: string
   answer: string

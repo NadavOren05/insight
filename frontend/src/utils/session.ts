@@ -6,6 +6,7 @@ const AUTH_TOKEN_KEY = 'auth_token'
 const EXPIRY_TIMESTAMP_KEY = 'expiry_timestamp'
 const SESSION_PARENT_ID_KEY = 'session_parent_id'
 const SESSION_PARENT_NAME_KEY = 'session_parent_name'
+const SESSION_PARENT_SOURCE_KEY = 'session_parent_source'
 const SESSION_CHILDREN_KEY = 'session_children'
 
 export interface StoredSession {
@@ -13,6 +14,7 @@ export interface StoredSession {
   expiryTimestamp: number
   parentId: string
   parentName: string
+  parentSource: LoginResponse['_source']
   children: ApiChild[]
 }
 
@@ -28,6 +30,7 @@ export const persistSession = (
       expiryTimestamp,
       parentId: loginResponse.parentId,
       parentName: loginResponse.parentName,
+      parentSource: loginResponse._source,
       children: loginResponse.children,
     }
   }
@@ -36,6 +39,7 @@ export const persistSession = (
   window.localStorage.setItem(EXPIRY_TIMESTAMP_KEY, String(expiryTimestamp))
   window.localStorage.setItem(SESSION_PARENT_ID_KEY, loginResponse.parentId)
   window.localStorage.setItem(SESSION_PARENT_NAME_KEY, loginResponse.parentName)
+  window.localStorage.setItem(SESSION_PARENT_SOURCE_KEY, loginResponse._source)
   window.localStorage.setItem(SESSION_CHILDREN_KEY, JSON.stringify(loginResponse.children))
 
   return {
@@ -43,6 +47,7 @@ export const persistSession = (
     expiryTimestamp,
     parentId: loginResponse.parentId,
     parentName: loginResponse.parentName,
+    parentSource: loginResponse._source,
     children: loginResponse.children,
   }
 }
@@ -56,6 +61,7 @@ export const clearStoredSession = (): void => {
   window.localStorage.removeItem(EXPIRY_TIMESTAMP_KEY)
   window.localStorage.removeItem(SESSION_PARENT_ID_KEY)
   window.localStorage.removeItem(SESSION_PARENT_NAME_KEY)
+  window.localStorage.removeItem(SESSION_PARENT_SOURCE_KEY)
   window.localStorage.removeItem(SESSION_CHILDREN_KEY)
 }
 
@@ -68,6 +74,7 @@ export const readStoredSession = (): StoredSession | null => {
   const expiryTimestampValue = window.localStorage.getItem(EXPIRY_TIMESTAMP_KEY)
   const parentId = window.localStorage.getItem(SESSION_PARENT_ID_KEY)
   const parentName = window.localStorage.getItem(SESSION_PARENT_NAME_KEY)
+  const parentSource = window.localStorage.getItem(SESSION_PARENT_SOURCE_KEY)
   const childrenValue = window.localStorage.getItem(SESSION_CHILDREN_KEY)
 
   if (!authToken || !expiryTimestampValue || !parentId || !parentName || !childrenValue) {
@@ -88,6 +95,7 @@ export const readStoredSession = (): StoredSession | null => {
       expiryTimestamp,
       parentId,
       parentName,
+      parentSource: parentSource === 'database' ? 'database' : 'mock',
       children,
     }
   } catch {

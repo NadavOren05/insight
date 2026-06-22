@@ -1,0 +1,94 @@
+<mxfile host="Electron" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/26.0.4 Chrome/128.0.6613.186 Electron/32.2.5 Safari/537.36" version="26.0.4">
+  <diagram id="edtech-questions-erd" name="EDTECH Questions ERD">
+    <mxGraphModel dx="1909" dy="1144" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title" value="EDTECH ERD – Question Bank &amp; Personalized Exams Module" style="text;html=1;strokeColor=none;fillColor=none;fontSize=24;fontStyle=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="360" y="20" width="880" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="legend" value="Existing EDTECH tables are shown in gray. New question/exam module tables are shown in blue." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=13;align=center;" parent="1" vertex="1">
+          <mxGeometry x="430" y="80" width="740" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="students" value="&lt;b&gt;students&lt;/b&gt;&lt;br&gt;&lt;font color=&#39;#666666&#39;&gt;existing table&lt;/font&gt;&lt;hr&gt;id uuid PK&lt;br&gt;full_name text&lt;br&gt;class_id uuid FK&lt;br&gt;created_at timestamp" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#eeeeee;strokeColor=#999999;fontSize=12;align=left;spacingLeft=10;" parent="1" vertex="1">
+          <mxGeometry x="80" y="190" width="260" height="150" as="geometry" />
+        </mxCell>
+        <mxCell id="subjects" value="&lt;b&gt;subjects&lt;/b&gt;&lt;br&gt;&lt;font color=&#39;#666666&#39;&gt;existing table&lt;/font&gt;&lt;hr&gt;id uuid PK&lt;br&gt;name text&lt;br&gt;class_id uuid FK&lt;br&gt;teacher_id uuid FK&lt;br&gt;created_at timestamp" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#eeeeee;strokeColor=#999999;fontSize=12;align=left;spacingLeft=10;" parent="1" vertex="1">
+          <mxGeometry x="80" y="430" width="260" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="topics" value="&lt;b&gt;topics&lt;/b&gt;&lt;br&gt;&lt;font color=&#39;#666666&#39;&gt;existing table&lt;/font&gt;&lt;hr&gt;id uuid PK&lt;br&gt;subject_id uuid FK&lt;br&gt;name text&lt;br&gt;taught_date date&lt;br&gt;created_at timestamp&lt;br&gt;&lt;br&gt;&lt;i&gt;Examples: addition, subtraction, multiplication, division, sequences&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#eeeeee;strokeColor=#999999;fontSize=12;align=left;spacingLeft=10;" parent="1" vertex="1">
+          <mxGeometry x="430" y="410" width="300" height="200" as="geometry" />
+        </mxCell>
+        <mxCell id="recommendations" value="&lt;b&gt;recommendations&lt;/b&gt;&lt;br&gt;&lt;font color=&#39;#666666&#39;&gt;existing AI layer table&lt;/font&gt;&lt;hr&gt;id uuid PK&lt;br&gt;analysis_id uuid FK&lt;br&gt;student_id uuid FK&lt;br&gt;title text&lt;br&gt;priority int&lt;br&gt;status enum&lt;br&gt;created_at timestamp" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#eeeeee;strokeColor=#999999;fontSize=12;align=left;spacingLeft=10;" parent="1" vertex="1">
+          <mxGeometry y="705" width="280" height="170" as="geometry" />
+        </mxCell>
+        <mxCell id="difficulty" value="&lt;b&gt;question_difficulty_levels&lt;/b&gt;&lt;hr&gt;id uuid PK&lt;br&gt;code text UNIQUE&lt;br&gt;label text&lt;br&gt;rank int&lt;br&gt;description text&lt;br&gt;created_at timestamp&lt;br&gt;&lt;br&gt;&lt;i&gt;Examples: easy, medium, hard&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;align=left;spacingLeft=10;" parent="1" vertex="1">
+          <mxGeometry x="780" y="160" width="310" height="190" as="geometry" />
+        </mxCell>
+        <mxCell id="question_types" value="&lt;b&gt;question_types&lt;/b&gt;&lt;hr&gt;id uuid PK&lt;br&gt;code text UNIQUE&lt;br&gt;description text&lt;br&gt;created_at timestamp&lt;br&gt;&lt;br&gt;&lt;i&gt;Examples: open_answer, mcq, true_false&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;align=left;spacingLeft=10;" parent="1" vertex="1">
+          <mxGeometry x="1140" y="170" width="310" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="8qJ2t32TDcKhEXGMPg_f-1" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="questions" target="question_options">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="questions" value="&lt;b&gt;questions&lt;/b&gt;&lt;hr&gt;id uuid PK&lt;br&gt;topic_id uuid FK → topics.id&lt;br&gt;difficulty_level_id uuid FK&lt;br&gt;question_type_id uuid FK&lt;br&gt;question_text text&lt;br&gt;correct_answer text&lt;br&gt;metadata_json jsonb&lt;br&gt;source text&lt;br&gt;is_active boolean&lt;br&gt;created_at timestamp&lt;br&gt;&lt;br&gt;&lt;i&gt;Main question bank&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;align=left;spacingLeft=10;" parent="1" vertex="1">
+          <mxGeometry x="810" y="430" width="330" height="255" as="geometry" />
+        </mxCell>
+        <mxCell id="question_options" value="&lt;b&gt;question_options&lt;/b&gt;&lt;hr&gt;id uuid PK&lt;br&gt;question_id uuid FK → questions.id&lt;br&gt;option_text text&lt;br&gt;is_correct boolean&lt;br&gt;display_order int&lt;br&gt;created_at timestamp&lt;br&gt;&lt;br&gt;&lt;i&gt;Used mainly for MCQ questions&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;align=left;spacingLeft=10;" parent="1" vertex="1">
+          <mxGeometry x="1210" y="450" width="300" height="170" as="geometry" />
+        </mxCell>
+        <mxCell id="exams" value="&lt;b&gt;generated_exams&lt;/b&gt;&lt;hr&gt;id uuid PK&lt;br&gt;student_id uuid FK → students.id&lt;br&gt;recommendation_id uuid FK nullable&lt;br&gt;title text&lt;br&gt;target_topic_id uuid FK nullable&lt;br&gt;generation_reason text&lt;br&gt;status text&lt;br&gt;created_at timestamp&lt;br&gt;&lt;br&gt;&lt;i&gt;Personalized generated test&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=12;align=left;spacingLeft=10;" parent="1" vertex="1">
+          <mxGeometry x="420" y="720" width="330" height="230" as="geometry" />
+        </mxCell>
+        <mxCell id="exam_questions" value="&lt;b&gt;exam_questions&lt;/b&gt;&lt;hr&gt;id uuid PK&lt;br&gt;exam_id uuid FK → generated_exams.id&lt;br&gt;question_id uuid FK → questions.id&lt;br&gt;display_order int&lt;br&gt;points int&lt;br&gt;created_at timestamp" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=12;align=left;spacingLeft=10;" parent="1" vertex="1">
+          <mxGeometry x="840" y="765" width="310" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="student_answers" value="&lt;b&gt;student_answers&lt;/b&gt;&lt;hr&gt;id uuid PK&lt;br&gt;exam_question_id uuid FK&lt;br&gt;student_id uuid FK → students.id&lt;br&gt;answer_text text&lt;br&gt;selected_option_id uuid FK nullable&lt;br&gt;is_correct boolean&lt;br&gt;score int&lt;br&gt;answered_at timestamp&lt;br&gt;created_at timestamp&lt;br&gt;&lt;br&gt;&lt;i&gt;Used to measure practice outcome&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=12;align=left;spacingLeft=10;" parent="1" vertex="1">
+          <mxGeometry x="1210" y="740" width="320" height="230" as="geometry" />
+        </mxCell>
+        <mxCell id="e1" value="1:N" style="endArrow=ERmany;startArrow=ERone;html=1;rounded=0;strokeWidth=2;" parent="1" source="subjects" target="topics" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e2" value="1:N" style="endArrow=ERmany;startArrow=ERone;html=1;rounded=0;strokeWidth=2;" parent="1" source="topics" target="questions" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e3" value="1:N" style="endArrow=ERmany;startArrow=ERone;html=1;rounded=0;strokeWidth=2;" parent="1" source="difficulty" target="questions" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e4" value="1:N" style="endArrow=ERmany;startArrow=ERone;html=1;rounded=0;strokeWidth=2;" parent="1" source="question_types" target="questions" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e5" value="1:N" style="endArrow=ERmany;startArrow=ERone;html=1;rounded=0;strokeWidth=2;" parent="1" source="questions" target="question_options" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e6" value="1:N" style="endArrow=ERmany;startArrow=ERone;html=1;rounded=0;strokeWidth=2;" parent="1" source="students" target="exams" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e7" value="0/1:N" style="endArrow=ERmany;startArrow=ERone;html=1;rounded=0;strokeWidth=2;dashed=1;" parent="1" source="recommendations" target="exams" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e8" value="0/1:N target topic" style="endArrow=ERmany;startArrow=ERone;html=1;rounded=0;strokeWidth=2;dashed=1;" parent="1" source="topics" target="exams" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e9" value="1:N" style="endArrow=ERmany;startArrow=ERone;html=1;rounded=0;strokeWidth=2;" parent="1" source="exams" target="exam_questions" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e10" value="1:N" style="endArrow=ERmany;startArrow=ERone;html=1;rounded=0;strokeWidth=2;" parent="1" source="questions" target="exam_questions" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e11" value="1:0/1" style="endArrow=ERone;startArrow=ERone;html=1;rounded=0;strokeWidth=2;" parent="1" source="exam_questions" target="student_answers" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e12" value="1:N" style="endArrow=ERmany;startArrow=ERone;html=1;rounded=0;strokeWidth=2;" parent="1" source="students" target="student_answers" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e13" value="0/1:N selected option" style="endArrow=ERmany;startArrow=ERone;html=1;rounded=0;strokeWidth=2;dashed=1;" parent="1" source="question_options" target="student_answers" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="note" value="Design note: no separate Arithmetic_Subtopics table is required here because the existing topics table already represents learning topics. For grade 3 math, create topics such as addition, subtraction, multiplication, division and sequences under the relevant subject." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=13;align=left;spacingLeft=10;" parent="1" vertex="1">
+          <mxGeometry x="70" y="990" width="760" height="80" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

@@ -11,3 +11,4 @@ Always read:
 .ai-context/ai-guidelines.md
 .ai-context/coding-style.md
 .ai-context/development-behavior.md
+.ai-context/question-bank-model.md

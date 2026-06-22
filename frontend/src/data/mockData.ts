@@ -45,15 +45,15 @@ export const yonatanSubjects: SubjectProgress[] = [
     id: 'math',
     name: 'מתמטיקה',
     riskLevel: 'red',
-    summary: 'יונתן מתקשה בשברים בגלל שיעורים חסרים בנושא Fractions.',
-    missingLessons: ['Fractions'],
+    summary: 'יונתן מתקשה בשברים בגלל שיעורים חסרים בנושא שברים.',
+    missingLessons: ['שברים'],
   },
   {
     id: 'english',
     name: 'אנגלית',
     riskLevel: 'yellow',
     summary: 'הבנת הנקרא יציבה, אך אוצר המילים דורש חיזוק השבוע.',
-    missingLessons: ['Vocabulary practice'],
+    missingLessons: ['תרגול אוצר מילים'],
   },
   {
     id: 'science',
@@ -130,7 +130,7 @@ export const subjectDataByStudentId: SubjectDataByStudentId = {
       aiSummary:
         'יונתן לא “חלש במתמטיקה” באופן כללי. הקושי מתרכז בשברים: הוא מפספס את המעבר בין מכנה משותף, הרחבה וצמצום, ולכן גם שאלות פשוטות נראות לו ארוכות מדי. אם הערב מתמקדים רק בזיהוי השלב הבא בתרגיל, אפשר להוריד עומס ולהחזיר תחושת שליטה.',
       topics: [
-        { id: 'fractions', name: 'Fractions', status: 'needs-support' },
+        { id: 'fractions', name: 'שברים', status: 'needs-support' },
         { id: 'common-denominator', name: 'מכנה משותף', status: 'needs-support' },
         { id: 'decimals', name: 'מספרים עשרוניים', status: 'medium' },
         { id: 'equations', name: 'משוואות בסיסיות', status: 'strong' },
@@ -139,7 +139,7 @@ export const subjectDataByStudentId: SubjectDataByStudentId = {
         percentage: 88,
         attendanceFlag: true,
         relevantAbsences: [
-          { id: 'absence-1', date: '12.05', topicName: 'Fractions' },
+          { id: 'absence-1', date: '12.05', topicName: 'שברים' },
           { id: 'absence-2', date: '19.05', topicName: 'מכנה משותף' },
           { id: 'absence-3', date: '26.05', topicName: 'תרגול שברים' },
         ],
@@ -148,7 +148,7 @@ export const subjectDataByStudentId: SubjectDataByStudentId = {
         {
           id: 'grade-1',
           date: '02.06',
-          topic: 'Fractions',
+          topic: 'שברים',
           type: 'בוחן',
           score: 62,
           classAvg: 78,
@@ -178,7 +178,7 @@ export const subjectDataByStudentId: SubjectDataByStudentId = {
       aiSummary:
         'באנגלית רואים פער קטן אבל עקבי באוצר מילים. יונתן מבין את הרעיון הכללי של טקסט, אבל נעצר כשהמילים החדשות מופיעות בתוך משפט. תרגול קצר עם חמש מילים מתוך הטקסט האחרון יהיה יעיל יותר מדף עבודה ארוך.',
       topics: [
-        { id: 'vocabulary', name: 'Vocabulary practice', status: 'medium' },
+        { id: 'vocabulary', name: 'תרגול אוצר מילים', status: 'medium' },
         { id: 'reading', name: 'הבנת הנקרא', status: 'strong' },
         { id: 'grammar', name: 'דקדוק בסיסי', status: 'medium' },
       ],
@@ -191,7 +191,7 @@ export const subjectDataByStudentId: SubjectDataByStudentId = {
         {
           id: 'grade-english-1',
           date: '06.06',
-          topic: 'Vocabulary practice',
+          topic: 'תרגול אוצר מילים',
           type: 'בוחן מילים',
           score: 76,
           classAvg: 80,

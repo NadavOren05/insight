@@ -1,0 +1,7 @@
+question_difficulty_levels: 3 rows
+question_types: 3 rows
+questions: 108 rows
+question_options: 216 rows
+generated_exams: 12 rows
+exam_questions: 36 rows
+student_answers: 18 rows
